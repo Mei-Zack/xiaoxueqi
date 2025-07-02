@@ -159,7 +159,7 @@ python init_db.py
 
 ```bash
 # 下载并运行deepseek-r1模型（推荐）
-ollama pull deepseek-r1:7b
+ollama run deepseek-r1:1.5b
 ```
 
 也可以使用其他支持的模型：
