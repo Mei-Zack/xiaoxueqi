@@ -275,7 +275,7 @@ pip install -r requirements.txt
 2. 打开命令提示符，运行：
 
    ```
-   ollama pull deepseek-r1:7b
+   ollama run deepseek-r1:1.5b
    ```
 
    这将下载大约 4GB 的模型文件，取决于你的网络速度，可能需要一段时间。
