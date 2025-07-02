@@ -422,15 +422,68 @@ Visual Studio Code (VSCode) 是一款功能强大的代码编辑器，可以帮�
 
 ### 7.2 安装推荐扩展
 
-为了更好地开发和查看代码，建议安装以下扩展：
+为了更好地开发和查看代码，需要安装一些 VSCode 扩展。下面分为必装插件和推荐插件两类：
 
-1. 点击左侧的"扩展"图标（或按 Ctrl+Shift+X）
-2. 搜索并安装以下扩展：
-   - Python（Microsoft 官方 Python 扩展）
-   - Vetur 或 Vue Language Features (Volar)（Vue.js 支持）
-   - ESLint（JavaScript 代码检查）
-   - Prettier（代码格式化）
-   - SQLite Viewer（查看 SQLite 数据库）
+#### 7.2.1 必装插件
+
+这些插件是使用项目的必要组件，请确保安装：
+
+1. **Python**（Microsoft 官方）
+   - 提供 Python 语言支持、调试、智能提示等功能
+   - 对后端 Python 代码编辑必不可少
+2. **Vue Language Features (Volar)**
+   - Vue 3 项目专用插件，提供语法高亮、智能提示等功能
+   - 前端 Vue 代码开发必备（如使用 Vue 2，则安装 Vetur）
+3. **ESLint**
+
+   - JavaScript 和 TypeScript 代码检查工具
+   - 帮助按照项目的代码规范编写代码
+
+4. **SQLite Viewer**
+   - 直接在 VSCode 中查看和操作 SQLite 数据库文件
+   - 方便在不打开 Navicat 的情况下快速查看 SQLite 数据
+
+#### 7.2.2 推荐插件
+
+这些插件可以提升开发体验，建议安装：
+
+1. **Prettier**
+
+   - 代码格式化工具，保持代码风格统一
+   - 自动调整代码格式，提高可读性
+
+2. **HTML CSS Support**
+
+   - 提供 HTML 和 CSS 的智能提示
+   - 对编辑前端代码有帮助
+
+3. **GitLens**
+
+   - Git 增强功能，可以查看每行代码的提交历史、作者等信息
+   - 帮助理解代码的变更历史
+
+4. **Auto Rename Tag**
+
+   - 自动重命名 HTML/XML 配对的标签
+   - 编辑 Vue 模板时非常有用
+
+5. **REST Client**
+
+   - 直接在 VSCode 中测试 API 请求
+   - 方便测试后端接口
+
+6. **YAML**
+   - YAML 文件支持，提供语法高亮和验证
+   - 编辑配置文件时有用
+
+#### 7.2.3 查看已安装的插件
+
+要检查您是否已安装所需的插件，可以按照以下步骤操作：
+
+1. 打开 VSCode
+2. 点击左侧边栏的扩展图标（或按 Ctrl+Shift+X）
+3. 在扩展面板上方，可以看到"已安装"选项，点击它即可查看所有已安装的插件
+4. 如果列表中没有某个必要的插件，在搜索框中输入插件名称进行安装
 
 ### 7.3 配置 Python 解释器
 
