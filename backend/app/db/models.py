@@ -1,0 +1,217 @@
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime, Text, JSON, Enum
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+import uuid
+from datetime import datetime
+
+from app.db.base_class import Base
+from app.models.user import GenderEnum, DiabetesTypeEnum
+from app.models.glucose import MeasurementTimeEnum, MeasurementMethodEnum
+from app.models.diet import MealTypeEnum
+from app.models.health import ExerciseTypeEnum, ExerciseIntensityEnum
+from app.models.assistant import MessageRoleEnum
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    email = Column(String(100), unique=True, index=True)
+    name = Column(String(100))
+    hashed_password = Column(String(255))
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    gender = Column(Enum(GenderEnum), nullable=True)
+    birth_date = Column(DateTime, nullable=True)
+    diabetes_type = Column(Enum(DiabetesTypeEnum), nullable=True)
+    diagnosis_date = Column(DateTime, nullable=True)
+    height = Column(Float, nullable=True)
+    weight = Column(Float, nullable=True)
+    phone = Column(String(20), nullable=True)
+    avatar = Column(String(255), nullable=True)
+    target_glucose_min = Column(Float, nullable=True)
+    target_glucose_max = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    glucose_records = relationship("GlucoseRecord", back_populates="user")
+    diet_records = relationship("DietRecord", back_populates="user")
+    health_records = relationship("HealthRecord", back_populates="user")
+    conversations = relationship("Conversation", back_populates="user")
+
+
+class GlucoseRecord(Base):
+    __tablename__ = "glucose_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"))
+    value = Column(Float, nullable=False)
+    measurement_time = Column(Enum(MeasurementTimeEnum), nullable=False)
+    measurement_method = Column(Enum(MeasurementMethodEnum), nullable=False)
+    measured_at = Column(DateTime, default=func.now())
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    user = relationship("User", back_populates="glucose_records")
+
+
+class DietRecord(Base):
+    __tablename__ = "diet_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"))
+    meal_type = Column(Enum(MealTypeEnum), nullable=False)
+    meal_time = Column(DateTime, default=func.now())
+    food_items = Column(JSON, nullable=False)  # 存储食物列表的JSON
+    total_carbs = Column(Float, nullable=False)
+    total_calories = Column(Float, nullable=False)
+    notes = Column(Text, nullable=True)
+    image_url = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    user = relationship("User", back_populates="diet_records")
+
+
+class HealthRecord(Base):
+    __tablename__ = "health_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"))
+    record_date = Column(DateTime, default=func.now())
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    user = relationship("User", back_populates="health_records")
+    weight_records = relationship("WeightRecord", back_populates="health_record")
+    blood_pressure_records = relationship("BloodPressureRecord", back_populates="health_record")
+    exercise_records = relationship("ExerciseRecord", back_populates="health_record")
+    medication_records = relationship("MedicationRecord", back_populates="health_record")
+
+
+class WeightRecord(Base):
+    __tablename__ = "weight_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    health_record_id = Column(String(36), ForeignKey("health_records.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
+    weight = Column(Float, nullable=False)
+    bmi = Column(Float, nullable=True)
+    body_fat = Column(Float, nullable=True)
+    measured_at = Column(DateTime, default=func.now())
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    health_record = relationship("HealthRecord", back_populates="weight_records")
+
+
+class BloodPressureRecord(Base):
+    __tablename__ = "blood_pressure_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    health_record_id = Column(String(36), ForeignKey("health_records.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
+    systolic = Column(Integer, nullable=False)
+    diastolic = Column(Integer, nullable=False)
+    pulse = Column(Integer, nullable=True)
+    measured_at = Column(DateTime, default=func.now())
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    health_record = relationship("HealthRecord", back_populates="blood_pressure_records")
+
+
+class ExerciseRecord(Base):
+    __tablename__ = "exercise_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    health_record_id = Column(String(36), ForeignKey("health_records.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
+    exercise_type = Column(Enum(ExerciseTypeEnum), nullable=False)
+    duration = Column(Integer, nullable=False)  # 单位：分钟
+    intensity = Column(Enum(ExerciseIntensityEnum), nullable=False)
+    calories_burned = Column(Float, nullable=True)
+    start_time = Column(DateTime, default=func.now())
+    end_time = Column(DateTime, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    health_record = relationship("HealthRecord", back_populates="exercise_records")
+
+
+class MedicationRecord(Base):
+    __tablename__ = "medication_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    health_record_id = Column(String(36), ForeignKey("health_records.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
+    name = Column(String(100), nullable=False)
+    dosage = Column(String(50), nullable=False)
+    taken_at = Column(DateTime, default=func.now())
+    scheduled_at = Column(DateTime, nullable=True)
+    is_taken = Column(Boolean, default=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    health_record = relationship("HealthRecord", back_populates="medication_records")
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"))
+    title = Column(String(100), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    user = relationship("User", back_populates="conversations")
+    messages = relationship("Message", back_populates="conversation")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    conversation_id = Column(String(36), ForeignKey("conversations.id"))
+    role = Column(Enum(MessageRoleEnum), nullable=False)
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=func.now())
+    message_metadata = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关联
+    conversation = relationship("Conversation", back_populates="messages")
+
+
+class KnowledgeBase(Base):
+    __tablename__ = "knowledge_base"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    title = Column(String(100), nullable=False)
+    content = Column(Text, nullable=False)
+    source = Column(String(255), nullable=True)
+    tags = Column(JSON, nullable=False, default=[])
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now()) 
