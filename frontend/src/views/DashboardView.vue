@@ -29,10 +29,15 @@
               <template #header>
                 <div class="card-header">
                   <span>血糖趋势</span>
-                  <el-radio-group v-model="glucosePeriod" size="small">
-                    <el-radio-button value="week">周</el-radio-button>
-                    <el-radio-button value="month">月</el-radio-button>
-                  </el-radio-group>
+                  <div class="header-actions">
+                    <el-button type="primary" size="small" circle @click="refreshData">
+                      <el-icon><Refresh /></el-icon>
+                    </el-button>
+                    <el-radio-group v-model="glucosePeriod" size="small">
+                      <el-radio-button value="week">周</el-radio-button>
+                      <el-radio-button value="month">月</el-radio-button>
+                    </el-radio-group>
+                  </div>
                 </div>
               </template>
               <div v-if="loading" class="loading-container">
@@ -45,7 +50,7 @@
               </div>
               <div v-else class="chart-container">
                 <!-- 这里将使用ECharts渲染血糖趋势图 -->
-                <div ref="glucoseChartRef" class="chart"></div>
+                <div ref="glucoseChartRef" class="chart" :key="chartKey"></div>
               </div>
             </el-card>
           </el-col>
@@ -155,19 +160,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Plus, ChatLineRound, Clock, CircleCheck } from '@element-plus/icons-vue'
-import * as echarts from 'echarts/core'
-import { LineChart } from 'echarts/charts'
-import { TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
+import { Plus, ChatLineRound, Clock, CircleCheck, Refresh } from '@element-plus/icons-vue'
+import * as echarts from 'echarts'
 import { glucoseApi, healthApi, dietApi, knowledgeApi } from '../api'
 import dayjs from 'dayjs'
+import { ElMessage } from 'element-plus'
 
-// 注册ECharts组件
-echarts.use([LineChart, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer])
+// 定义血糖记录类型接口
+interface GlucoseRecord {
+  id: string;
+  value: number;
+  measured_at: string | Date;
+  measurement_time: string;
+  measurement_method: string;
+  notes: string;
+  user_id: string;
+}
+
+// 定义日期分组记录类型
+interface DateGroupedRecords {
+  [date: string]: {
+    fasting: number[];
+    afterMeal: number[];
+  }
+}
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -176,6 +195,7 @@ const loading = ref(true)
 const glucosePeriod = ref('week')
 const glucoseChartRef = ref<HTMLElement | null>(null)
 const glucoseChart = ref<echarts.ECharts | null>(null)
+const chartKey = ref(0)
 
 const userName = computed(() => userStore.userFullName)
 const currentDate = computed(() => dayjs().format('YYYY年MM月DD日'))
@@ -188,7 +208,7 @@ const healthMetrics = ref({
   steps: '6,842'
 })
 
-const hasGlucoseData = ref(true)
+const hasGlucoseData = ref(false)
 const hasDietData = ref(true)
 
 const dietRecords = ref([
@@ -223,13 +243,198 @@ const knowledgeArticles = ref([
   }
 ])
 
-onMounted(async () => {
+// 血糖数据
+const glucoseRecords = ref<GlucoseRecord[]>([])
+
+// 从API获取血糖数据
+const fetchGlucoseData = async () => {
   try {
-    // 这里应该调用API获取实际数据
-    // await fetchDashboardData()
+    loading.value = true
+    console.log('开始获取血糖数据...')
+    const response = await glucoseApi.getGlucoseRecords()
+    console.log('获取到血糖数据:', response.data)
     
-    // 初始化血糖趋势图
-    initGlucoseChart()
+    if (Array.isArray(response.data)) {
+      glucoseRecords.value = response.data
+      hasGlucoseData.value = glucoseRecords.value.length > 0
+      
+      console.log(`获取到 ${glucoseRecords.value.length} 条血糖记录`)
+      console.log('血糖记录示例:', glucoseRecords.value.slice(0, 2))
+      
+      // 返回数据状态，不在此函数中初始化图表
+      return {
+        success: true,
+        hasData: hasGlucoseData.value
+      }
+    } else {
+      console.error('API返回的数据格式不正确:', response.data)
+      hasGlucoseData.value = false
+      return {
+        success: false,
+        hasData: false
+      }
+    }
+  } catch (error) {
+    console.error('获取血糖数据失败', error)
+    hasGlucoseData.value = false
+    return {
+      success: false,
+      hasData: false
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+// 处理血糖数据，根据周期返回图表所需数据
+const processGlucoseData = () => {
+  console.log('开始处理血糖数据，当前记录数:', glucoseRecords.value?.length || 0)
+  
+  if (!glucoseRecords.value || glucoseRecords.value.length === 0) {
+    console.log('没有血糖记录，返回空数据')
+    return {
+      dates: [] as string[],
+      fastingData: [] as (number | null)[],
+      afterMealData: [] as (number | null)[]
+    }
+  }
+  
+  // 根据周期过滤数据
+  let filteredRecords = [...glucoseRecords.value]
+  const now = dayjs()
+  
+  if (glucosePeriod.value === 'week') {
+    // 获取最近7天的数据
+    const startDate = now.subtract(6, 'day').startOf('day')
+    console.log('周视图起始日期:', startDate.format('YYYY-MM-DD'))
+    filteredRecords = filteredRecords.filter(record => 
+      dayjs(record.measured_at).isAfter(startDate)
+    )
+  } else {
+    // 获取最近30天的数据
+    const startDate = now.subtract(29, 'day').startOf('day')
+    console.log('月视图起始日期:', startDate.format('YYYY-MM-DD'))
+    filteredRecords = filteredRecords.filter(record => 
+      dayjs(record.measured_at).isAfter(startDate)
+    )
+  }
+  
+  console.log('过滤后的记录数:', filteredRecords.length)
+  
+  // 按日期分组
+  const recordsByDate: DateGroupedRecords = {}
+  const dateFormat = 'MM-DD'
+  
+  filteredRecords.forEach(record => {
+    const date = dayjs(record.measured_at).format(dateFormat)
+    if (!recordsByDate[date]) {
+      recordsByDate[date] = {
+        fasting: [],
+        afterMeal: []
+      }
+    }
+    
+    // 根据测量时间类型分组
+    if (['before_breakfast', 'before_lunch', 'before_dinner'].includes(record.measurement_time)) {
+      recordsByDate[date].fasting.push(record.value)
+    } else if (['after_breakfast', 'after_lunch', 'after_dinner'].includes(record.measurement_time)) {
+      recordsByDate[date].afterMeal.push(record.value)
+    }
+  })
+  
+  console.log('按日期分组后的数据:', recordsByDate)
+  
+  // 准备图表数据
+  const dates: string[] = []
+  const fastingData: (number | null)[] = []
+  const afterMealData: (number | null)[] = []
+  
+  // 生成日期范围
+  let dateRange: string[] = []
+  if (glucosePeriod.value === 'week') {
+    // 最近7天
+    for (let i = 6; i >= 0; i--) {
+      dateRange.push(now.subtract(i, 'day').format(dateFormat))
+    }
+  } else {
+    // 最近30天
+    for (let i = 29; i >= 0; i--) {
+      dateRange.push(now.subtract(i, 'day').format(dateFormat))
+    }
+  }
+  
+  // 修复：使用新的dayjs实例避免日期计算错误
+  dateRange = []
+  const periodDays = glucosePeriod.value === 'week' ? 7 : 30
+  const startDay = glucosePeriod.value === 'week' ? 6 : 29
+  
+  for (let i = startDay; i >= 0; i--) {
+    const d = dayjs().subtract(i, 'day')
+    dateRange.push(d.format(dateFormat))
+  }
+  
+  console.log('生成的日期范围:', dateRange)
+  
+  // 填充数据，没有的日期用null
+  dateRange.forEach(date => {
+    dates.push(date)
+    
+    if (recordsByDate[date]) {
+      // 计算空腹血糖平均值
+      const fastingValues = recordsByDate[date].fasting
+      fastingData.push(fastingValues.length > 0 
+        ? Number((fastingValues.reduce((sum, val) => sum + val, 0) / fastingValues.length).toFixed(1))
+        : null)
+      
+      // 计算餐后血糖平均值
+      const afterMealValues = recordsByDate[date].afterMeal
+      afterMealData.push(afterMealValues.length > 0
+        ? Number((afterMealValues.reduce((sum, val) => sum + val, 0) / afterMealValues.length).toFixed(1))
+        : null)
+    } else {
+      fastingData.push(null)
+      afterMealData.push(null)
+    }
+  })
+  
+  console.log('处理后的图表数据:', {
+    dates,
+    fastingData,
+    afterMealData
+  })
+  
+  return { dates, fastingData, afterMealData }
+}
+
+onMounted(async () => {
+  console.log('DashboardView组件挂载')
+  try {
+    // 获取血糖数据
+    const result = await fetchGlucoseData()
+    
+    if (result.success && result.hasData) {
+      // 确保DOM已经渲染完成
+      await nextTick()
+      console.log('DOM已更新，准备初始化图表')
+      
+      // 延迟一点时间确保DOM完全渲染
+      setTimeout(() => {
+        if (glucoseChartRef.value) {
+          // 强制设置容器尺寸
+          glucoseChartRef.value.style.height = '300px'
+          glucoseChartRef.value.style.width = '100%'
+          
+          console.log('组件挂载时初始化图表')
+          initGlucoseChart()
+        } else {
+          console.error('组件挂载时图表容器不存在')
+        }
+      }, 200)
+    }
+    
+    // 获取其他数据（可以添加实际API调用）
+    // await fetchHealthMetrics()
+    // await fetchDietRecords()
   } catch (error) {
     console.error('获取仪表盘数据失败', error)
   } finally {
@@ -237,18 +442,163 @@ onMounted(async () => {
   }
 })
 
-const initGlucoseChart = () => {
-  if (glucoseChartRef.value) {
-    glucoseChart.value = echarts.init(glucoseChartRef.value)
+// 添加onActivated钩子，在组件被激活时重新获取数据
+onActivated(async () => {
+  console.log('Dashboard组件被激活，重新获取数据')
+  try {
+    // 检查图表是否已初始化
+    if (hasGlucoseData.value && !glucoseChart.value && glucoseChartRef.value) {
+      console.log('组件激活，但图表未初始化，尝试初始化图表')
+      
+      // 更新chartKey强制重新渲染图表容器
+      chartKey.value += 1
+      
+      await nextTick()
+      
+      // 强制设置容器尺寸
+      if (glucoseChartRef.value) {
+        glucoseChartRef.value.style.height = '300px'
+        glucoseChartRef.value.style.width = '100%'
+      }
+      
+      setTimeout(() => {
+        initGlucoseChart()
+      }, 200)
+    } else if (!glucoseChart.value) {
+      // 重新获取数据
+      const result = await fetchGlucoseData()
+      
+      if (result.success && result.hasData) {
+        // 更新chartKey强制重新渲染图表容器
+        chartKey.value += 1
+        
+        await nextTick()
+        
+        // 强制设置容器尺寸
+        if (glucoseChartRef.value) {
+          glucoseChartRef.value.style.height = '300px'
+          glucoseChartRef.value.style.width = '100%'
+        }
+        
+        setTimeout(() => {
+          initGlucoseChart()
+        }, 200)
+      }
+    } else {
+      console.log('图表已存在，尝试更新')
+      updateGlucoseChart()
+    }
+  } catch (error) {
+    console.error('重新获取血糖数据失败', error)
+  } finally {
+    loading.value = false
+  }
+})
+
+// 添加手动刷新功能
+const refreshData = async () => {
+  try {
+    loading.value = true
+    console.log('手动刷新数据开始')
     
-    // 模拟数据
-    const dates = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-    const fastingData = [5.6, 5.8, 5.5, 6.1, 5.9, 5.7, 5.6]
-    const afterMealData = [7.8, 8.2, 7.5, 8.5, 8.0, 7.9, 7.7]
+    // 销毁现有图表实例
+    if (glucoseChart.value) {
+      console.log('销毁现有图表实例')
+      glucoseChart.value.dispose()
+      glucoseChart.value = null
+    }
     
+    // 更新chartKey强制重新渲染图表容器
+    chartKey.value += 1
+    console.log('更新chartKey:', chartKey.value)
+    
+    // 获取新数据
+    const result = await fetchGlucoseData()
+    
+    // 确保在获取数据后重新创建图表
+    if (result.success && result.hasData) {
+      console.log('刷新后准备重新创建图表')
+      
+      // 使用更简单的方法，直接重新创建图表
+      await nextTick()
+      
+      // 确保图表容器存在
+      if (!glucoseChartRef.value) {
+        console.error('图表容器不存在，无法重新创建图表')
+        return
+      }
+      
+      // 强制设置容器尺寸
+      glucoseChartRef.value.style.height = '300px'
+      glucoseChartRef.value.style.width = '100%'
+      
+      console.log('重新创建图表实例')
+      try {
+        // 确保echarts已正确导入
+        if (!echarts) {
+          console.error('echarts库未正确导入')
+          return
+        }
+        
+        // 直接创建新实例
+        glucoseChart.value = echarts.init(glucoseChartRef.value)
+        console.log('图表实例创建成功:', glucoseChart.value)
+        
+        // 设置图表选项
+        updateGlucoseChart()
+      } catch (error) {
+        console.error('刷新时创建图表实例失败:', error)
+      }
+    }
+    
+    ElMessage.success('数据刷新成功')
+  } catch (error) {
+    console.error('刷新数据失败', error)
+    ElMessage.error('刷新数据失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 监听glucosePeriod变化，更新图表
+watch(glucosePeriod, () => {
+  if (hasGlucoseData.value && glucoseChart.value) {
+    updateGlucoseChart()
+  }
+})
+
+// 更新血糖图表
+const updateGlucoseChart = () => {
+  console.log('开始更新图表')
+  if (!glucoseChart.value) {
+    console.error('图表实例不存在，无法更新')
+    return
+  }
+  
+  const { dates, fastingData, afterMealData } = processGlucoseData()
+  console.log('处理后的图表数据:', { 
+    dates, 
+    fastingData, 
+    afterMealData,
+    datesLength: dates.length
+  })
+  
+  try {
     const option = {
       tooltip: {
-        trigger: 'axis'
+        trigger: 'axis',
+        formatter: function(params: any) {
+          let result = params[0].axisValueLabel + '<br/>';
+          params.forEach((param: any) => {
+            if (param.value !== null) {
+              const color = param.value > 7.8 ? '#f56c6c' : 
+                            param.value < 3.9 ? '#e6a23c' : '#67c23a';
+              result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${param.color};"></span>`;
+              result += `${param.seriesName}: <span style="color:${color};font-weight:bold">${param.value} mmol/L</span><br/>`;
+            }
+          });
+          return result;
+        }
       },
       legend: {
         data: ['空腹血糖', '餐后血糖']
@@ -267,18 +617,28 @@ const initGlucoseChart = () => {
       yAxis: {
         type: 'value',
         name: '血糖 (mmol/L)',
-        min: 4,
-        max: 10,
-        interval: 1
+        min: 3.5,
+        max: 10.5,
+        interval: 1,
+        axisLine: { lineStyle: { color: '#666' } }
       },
       series: [
         {
           name: '空腹血糖',
           type: 'line',
           data: fastingData,
+          connectNulls: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          itemStyle: {
+            color: '#409eff'
+          },
+          lineStyle: {
+            width: 2
+          },
           markArea: {
             itemStyle: {
-              color: 'rgba(0, 255, 0, 0.1)'
+              color: 'rgba(103, 194, 58, 0.1)'
             },
             data: [
               [{
@@ -293,9 +653,18 @@ const initGlucoseChart = () => {
           name: '餐后血糖',
           type: 'line',
           data: afterMealData,
+          connectNulls: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          itemStyle: {
+            color: '#ff9f43'
+          },
+          lineStyle: {
+            width: 2
+          },
           markArea: {
             itemStyle: {
-              color: 'rgba(0, 255, 0, 0.1)'
+              color: 'rgba(103, 194, 58, 0.1)'
             },
             data: [
               [{
@@ -309,12 +678,92 @@ const initGlucoseChart = () => {
       ]
     }
     
+    console.log('设置图表选项')
     glucoseChart.value.setOption(option)
+    console.log('图表选项设置完成')
+  } catch (error) {
+    console.error('设置图表选项失败:', error)
+  }
+}
+
+const initGlucoseChart = () => {
+  console.log('开始初始化图表')
+  console.log('glucoseChartRef元素:', glucoseChartRef.value)
+  
+  if (!glucoseChartRef.value) {
+    console.error('图表容器元素不存在，无法初始化图表')
+    return
+  }
+  
+  // 如果已经有图表实例，先销毁
+  if (glucoseChart.value) {
+    console.log('销毁旧图表实例')
+    try {
+      glucoseChart.value.dispose()
+    } catch (error) {
+      console.error('销毁旧图表实例失败:', error)
+    }
+    glucoseChart.value = null
+  }
+  
+  // 确保DOM元素有宽高
+  const chartElement = glucoseChartRef.value
+  if (chartElement.offsetHeight === 0) {
+    console.log('图表容器高度为0，设置默认高度')
+    chartElement.style.height = '300px'
+  }
+  
+  if (chartElement.offsetWidth === 0) {
+    console.log('图表容器宽度为0，设置默认宽度')
+    chartElement.style.width = '100%'
+  }
+  
+  console.log('图表容器尺寸:', {
+    height: chartElement.offsetHeight,
+    width: chartElement.offsetWidth,
+    clientHeight: chartElement.clientHeight,
+    clientWidth: chartElement.clientWidth
+  })
+  
+  // 创建新的图表实例
+  try {
+    console.log('创建新图表实例')
+    // 确保echarts已正确导入
+    if (!echarts) {
+      console.error('echarts库未正确导入')
+      return
+    }
+    
+    glucoseChart.value = echarts.init(chartElement)
+    console.log('图表实例创建成功:', glucoseChart.value)
+    
+    // 设置图表选项
+    updateGlucoseChart()
     
     // 监听窗口大小变化，调整图表大小
-    window.addEventListener('resize', () => {
-      glucoseChart.value?.resize()
-    })
+    const resizeHandler = () => {
+      console.log('窗口大小变化，调整图表大小')
+      if (glucoseChart.value) {
+        glucoseChart.value.resize()
+      }
+    }
+    
+    window.removeEventListener('resize', resizeHandler)
+    window.addEventListener('resize', resizeHandler)
+  } catch (error) {
+    console.error('图表初始化失败:', error)
+    // 尝试再次初始化
+    setTimeout(() => {
+      console.log('尝试再次初始化图表')
+      try {
+        if (chartElement && !glucoseChart.value) {
+          glucoseChart.value = echarts.init(chartElement)
+          updateGlucoseChart()
+        }
+      } catch (retryError) {
+        console.error('再次初始化图表失败:', retryError)
+      }
+    }, 500)
   }
 }
 
@@ -388,11 +837,16 @@ const goToDietRecord = () => {
 
 .chart-container {
   height: 300px;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
 }
 
 .chart {
   width: 100%;
   height: 100%;
+  min-height: 300px;
 }
 
 .metrics-container {

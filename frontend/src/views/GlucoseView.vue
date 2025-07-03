@@ -172,6 +172,17 @@ import dayjs from "dayjs";
 import { glucoseApi } from "../api/index";
 import { useUserStore } from "../stores/user";
 
+// 定义血糖记录类型接口
+interface GlucoseRecord {
+  id: string;
+  value: number;
+  measured_at: string | Date;
+  measurement_time: string;
+  measurement_method: string;
+  notes: string;
+  user_id: string;
+}
+
 // 表单引用
 const glucoseFormRef = ref();
 
@@ -194,7 +205,7 @@ const glucoseForm = reactive({
 });
 
 // 血糖记录数据
-const glucoseRecords = ref([]);
+const glucoseRecords = ref<GlucoseRecord[]>([]);
 
 // 获取用户store
 const userStore = useUserStore();
