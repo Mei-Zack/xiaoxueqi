@@ -716,6 +716,69 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
   2. 检查前端的 `.env.local` 文件中的 API 地址是否正确
   3. 如果后端使用了不同的端口，相应更新前端配置
 
+#### 问题：登录认证问题
+
+- **症状**：登录失败，返回401 Unauthorized
+
+  - 前端登录时返回 401 Unauthorized 错误
+  - 后端日志显示 `ERROR:app.db.session:数据库会话错误`
+  - 响应状态码为 401 Unauthorized
+
+- **可能原因**：
+  1. 数据库中没有对应的用户记录
+  2. 密码验证失败
+  3. 数据库连接问题导致无法查询用户
+  4. 前端请求格式不正确
+  5. CORS配置问题
+
+- **诊断步骤**：
+  1. 检查数据库连接和用户表：
+     ```bash
+     # 在后端目录下执行
+     python check_users.py
+     ```
+     确认数据库中是否有用户记录
+
+  2. 创建管理员账号（如果不存在）：
+     ```bash
+     # 在后端目录下执行
+     python create_admin.py
+     ```
+
+  3. 测试后端登录API：
+     ```bash
+     # 在后端目录下执行
+     python test_login_api.py
+     ```
+     
+  4. 验证完整登录流程：
+     ```bash
+     # 在后端目录下执行
+     python verify_login.py
+     ```
+
+- **解决方法**：
+  1. 确保数据库中存在用户记录，可以使用 `create_admin.py` 创建管理员账号
+  2. 确保前端使用正确的请求格式：
+     - 使用 `application/x-www-form-urlencoded` 内容类型
+     - 使用 `URLSearchParams` 构造表单数据
+     - 确保用户名字段为 `username`（不是 `email`）
+  3. 检查前端请求中的 CORS 配置，特别是当使用 `withCredentials: true` 时
+  4. 在浏览器控制台中使用 `test-login.js` 脚本测试登录流程
+  5. 检查浏览器开发者工具的网络面板，监控登录请求和响应
+
+#### 问题：withCredentials 导致的 CORS 错误
+
+- **症状**：
+  - 浏览器控制台显示 CORS 相关错误
+  - 使用了 `withCredentials: true` 但请求被阻止
+
+- **解决方法**：
+  1. 确保后端的 CORS 配置明确列出了所有允许的源（不能使用通配符 `*`）
+  2. 修改后端 CORS 配置，添加前端域名到 `allow_origins` 列表
+  3. 确保 `allow_credentials=True` 已在后端 CORS 中间件中设置
+  4. 如果问题仍然存在，可以尝试在前端临时禁用 `withCredentials`
+
 ### 9.3 Ollama 模型问题
 
 #### 问题：模型下载失败

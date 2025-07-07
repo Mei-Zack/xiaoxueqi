@@ -7,6 +7,9 @@ import sys
 import os
 import logging
 from passlib.context import CryptContext
+import requests
+import json
+from urllib.parse import urlencode
 
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -54,18 +57,69 @@ def verify_user_credentials(email, password):
     finally:
         db.close()
 
+def verify_login():
+    """验证登录过程，模拟前端的登录请求"""
+    print("开始验证登录过程...")
+    
+    # API地址
+    base_url = "http://localhost:8000"
+    login_url = f"{base_url}/api/v1/users/login"
+    
+    # 登录数据
+    login_data = {
+        "username": "admin@example.com",
+        "password": "admin123"
+    }
+    
+    # 将登录数据转换为表单格式
+    form_data = urlencode(login_data)
+    
+    # 发送请求
+    try:
+        print(f"发送POST请求到: {login_url}")
+        print(f"请求数据: {login_data}")
+        print(f"请求头: Content-Type: application/x-www-form-urlencoded")
+        
+        # 使用表单格式发送请求
+        response = requests.post(
+            login_url, 
+            data=form_data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
+        
+        print(f"响应状态码: {response.status_code}")
+        
+        if response.status_code == 200:
+            print("登录成功!")
+            response_data = response.json()
+            print(f"响应数据: {json.dumps(response_data, indent=2, ensure_ascii=False)}")
+            
+            # 获取令牌
+            token = response_data.get("access_token")
+            
+            # 测试获取用户资料
+            if token:
+                print("\n使用令牌获取用户资料...")
+                profile_url = f"{base_url}/api/v1/users/profile"
+                profile_response = requests.get(
+                    profile_url,
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+                
+                print(f"资料请求状态码: {profile_response.status_code}")
+                
+                if profile_response.status_code == 200:
+                    print("获取用户资料成功!")
+                    print(f"用户资料: {json.dumps(profile_response.json(), indent=2, ensure_ascii=False)}")
+                else:
+                    print(f"获取用户资料失败! 状态码: {profile_response.status_code}")
+                    print(f"错误信息: {profile_response.text}")
+        else:
+            print(f"登录失败! 状态码: {response.status_code}")
+            print(f"错误信息: {response.text}")
+            
+    except Exception as e:
+        print(f"请求失败: {str(e)}")
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("使用方法: python verify_login.py <email> <password>")
-        sys.exit(1)
-    
-    email = sys.argv[1]
-    password = sys.argv[2]
-    
-    logger.info(f"🔍 正在验证用户凭据: {email}")
-    result = verify_user_credentials(email, password)
-    
-    if result:
-        logger.info("✅ 验证成功! 用户凭据有效")
-    else:
-        logger.error("❌ 验证失败! 用户凭据无效") 
+    verify_login() 

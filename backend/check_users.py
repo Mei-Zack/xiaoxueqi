@@ -6,6 +6,7 @@
 import sys
 import os
 import logging
+import json
 
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,29 +19,25 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def check_users():
-    """查询数据库中的所有用户"""
+    """检查数据库中的用户"""
     db = SessionLocal()
     try:
         users = db.query(User).all()
-        
-        if not users:
-            logger.info("⚠️ 数据库中没有用户")
-            return
-        
-        logger.info(f"✅ 找到 {len(users)} 个用户:")
+        print(f"数据库中共有 {len(users)} 个用户:")
         
         for user in users:
-            logger.info(f"  - ID: {user.id}")
-            logger.info(f"    Email: {user.email}")
-            logger.info(f"    Name: {user.name}")
-            logger.info(f"    Is Admin: {user.is_superuser}")
-            logger.info(f"    Is Active: {user.is_active}")
-            logger.info(f"    Created At: {user.created_at}")
-            logger.info("---")
-    
+            user_info = {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "is_active": user.is_active,
+                "is_superuser": user.is_superuser,
+                "hashed_password": user.hashed_password[:10] + "..." if user.hashed_password else None
+            }
+            print(json.dumps(user_info, ensure_ascii=False, indent=2))
+            print("-" * 40)
     except Exception as e:
-        logger.error(f"❌ 查询用户失败: {e}")
-    
+        print(f"查询用户失败: {str(e)}")
     finally:
         db.close()
 
