@@ -55,25 +55,35 @@ def get_glucose_record(db: Session, record_id: str) -> Optional[GlucoseRecord]:
 
 
 def get_user_glucose_records(
-    db: Session, 
-    user_id: str, 
-    skip: int = 0, 
-    limit: int = 100,
+    db: Session,
+    user_id: int,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> List[GlucoseRecord]:
-    """获取用户的血糖记录"""
-    # 构建查询
+    """
+    获取用户在指定时间范围内的血糖记录
+    
+    Args:
+        db: 数据库会话
+        user_id: 用户ID
+        start_date: 开始时间，如果为None则不限制开始时间
+        end_date: 结束时间，如果为None则不限制结束时间
+        
+    Returns:
+        血糖记录列表
+    """
     query = db.query(GlucoseRecord).filter(GlucoseRecord.user_id == user_id)
     
-    # 添加日期过滤
     if start_date:
         query = query.filter(GlucoseRecord.measured_at >= start_date)
+    
     if end_date:
         query = query.filter(GlucoseRecord.measured_at <= end_date)
     
-    # 按时间降序排序，分页
-    return query.order_by(desc(GlucoseRecord.measured_at)).offset(skip).limit(limit).all()
+    # 按时间降序排序
+    query = query.order_by(GlucoseRecord.measured_at.desc())
+    
+    return query.all()
 
 
 def update_glucose_record(db: Session, record_id: str, record_in: GlucoseUpdate) -> GlucoseRecord:

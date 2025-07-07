@@ -173,6 +173,50 @@
                 </el-form-item>
               </el-form>
             </div>
+            
+            <!-- 新增：智能分析部分 -->
+            <el-divider content-position="center">智能分析</el-divider>
+            
+            <div v-if="loadingAnalysis" class="loading-container">
+              <el-skeleton :rows="3" animated />
+            </div>
+            <div v-else-if="!hasAnalysisData" class="empty-analysis">
+              <el-empty description="需要至少3天的血糖数据" :image-size="60">
+                <template #description>
+                  <p>需要更多血糖数据才能生成分析</p>
+                </template>
+                <el-button size="small" @click="fetchGlucoseAnalysis">尝试分析</el-button>
+              </el-empty>
+            </div>
+            <div v-else class="glucose-analysis">
+              <!-- 分析概要 -->
+              <div class="analysis-summary">
+                <div class="summary-item" :class="getValueClass(glucoseAnalysis.statistics.average)">
+                  <div class="summary-value">{{ glucoseAnalysis.statistics.average.toFixed(1) }}</div>
+                  <div class="summary-label">平均血糖</div>
+                </div>
+                <div class="summary-item" :class="getRangeClass(glucoseAnalysis.statistics.in_range_percentage)">
+                  <div class="summary-value">{{ glucoseAnalysis.statistics.in_range_percentage.toFixed(0) }}%</div>
+                  <div class="summary-label">达标率</div>
+                </div>
+                <div class="summary-item" :class="getStdClass(glucoseAnalysis.statistics.std)">
+                  <div class="summary-value">{{ getVariabilityText(glucoseAnalysis.statistics.std) }}</div>
+                  <div class="summary-label">波动性</div>
+                </div>
+              </div>
+              
+              <!-- 智能建议预览 -->
+              <div class="advice-preview">
+                <div class="advice-title">
+                  <el-icon><ChatLineSquare /></el-icon>
+                  <span>AI建议</span>
+                </div>
+                <div class="advice-content">
+                  {{ truncateAdvice(glucoseAnalysis.advice, 100) }}
+                </div>
+                <el-button type="text" @click="showFullAdvice">查看完整建议</el-button>
+              </div>
+            </div>
           </div>
         </el-card>
         
@@ -216,14 +260,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick, onActivated } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onActivated, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Plus, ChatLineRound, Clock, CircleCheck, Refresh } from '@element-plus/icons-vue'
+import { Plus, ChatLineRound, Clock, CircleCheck, Refresh, ChatLineSquare } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { glucoseApi, healthApi, dietApi, knowledgeApi, apiClient } from '../api'
 import dayjs from 'dayjs'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 定义血糖记录类型接口
 interface GlucoseRecord {
@@ -252,6 +296,7 @@ const glucosePeriod = ref('week')
 const glucoseChartRef = ref<HTMLElement | null>(null)
 const glucoseChart = ref<echarts.ECharts | null>(null)
 const chartKey = ref(0)
+const glucoseCheckTimer = ref<number | null>(null)
 
 const userName = computed(() => userStore.userFullName)
 const currentDate = computed(() => dayjs().format('YYYY年MM月DD日'))
@@ -309,12 +354,38 @@ const glucoseForm = ref({
   measurement_time: 'BEFORE_BREAKFAST'
 })
 
+// 智能分析相关状态
+const loadingAnalysis = ref(false)
+const hasAnalysisData = ref(false)
+const glucoseAnalysis = ref({
+  statistics: {
+    average: 0,
+    max: 0,
+    min: 0,
+    std: 0,
+    in_range_percentage: 0,
+    high_percentage: 0,
+    low_percentage: 0
+  },
+  patterns: {},
+  advice: '',
+  record_count: 0,
+  updated_at: ''
+})
+
 // 从API获取血糖数据
 const fetchGlucoseData = async () => {
   try {
     loading.value = true
     console.log('开始获取血糖数据...')
-    const response = await glucoseApi.getGlucoseRecords()
+    
+    // 使用新的API路径
+    const response = await apiClient.get('/api/v1/glucose/recent', {
+      params: {
+        days: glucosePeriod.value === 'week' ? 7 : 30
+      }
+    })
+    
     console.log('获取到血糖数据:', response.data)
     
     if (Array.isArray(response.data)) {
@@ -469,23 +540,45 @@ const processGlucoseData = () => {
   return { dates, fastingData, afterMealData }
 }
 
-// 导入血糖数据
+// 快速导入血糖数据
 const importGlucoseData = async () => {
+  // 验证表单
   if (!glucoseForm.value.value || !glucoseForm.value.measurement_time) {
     ElMessage.warning('请填写完整的血糖数据')
     return
   }
   
-  importing.value = true
   try {
-    const response = await apiClient.post('/api/v1/glucose', {
-      value: glucoseForm.value.value,
-      measured_at: dayjs().format('YYYY-MM-DDTHH:mm:00Z'),
-      measurement_time: glucoseForm.value.measurement_time,
-      notes: '从仪表盘快速添加'
-    })
+    importing.value = true
     
-    ElMessage.success(response.data.message || '血糖数据保存成功')
+    // 打印 userStore 以检查用户 ID 字段
+    console.log('userStore:', userStore)
+    
+    // 检查用户ID是否存在
+    if (!userStore.user || !userStore.user.id) {
+      ElMessage.error('用户未登录或用户ID不存在')
+      importing.value = false
+      return
+    }
+    
+    // 构建请求数据 - 确保格式正确
+    const data = {
+      value: glucoseForm.value.value,
+      measured_at: dayjs().format('YYYY-MM-DDTHH:mm:ss'),
+      measurement_time: glucoseForm.value.measurement_time,
+      measurement_method: 'FINGER_STICK', // 默认使用指尖血
+      notes: '', // 添加可选的备注字段
+      user_id: userStore.user.id // 添加用户ID
+    }
+    
+    console.log('发送的血糖数据:', data)
+    
+    // 调用API保存血糖数据
+    const response = await apiClient.post('/api/v1/glucose', data)
+    
+    console.log('保存血糖数据响应:', response)
+    
+    ElMessage.success('血糖数据保存成功')
     
     // 重置表单
     glucoseForm.value.value = 5.6
@@ -495,65 +588,121 @@ const importGlucoseData = async () => {
     
     // 分析血糖数据
     await analyzeGlucoseData()
+    
+    // 获取三天分析
+    await fetchGlucoseAnalysis()
+    
   } catch (error) {
-    console.error('保存血糖数据失败', error)
-    ElMessage.error('保存血糖数据失败')
+    console.error('保存血糖数据失败:', error)
+    
+    // 提供更详细的错误信息
+    if (error.response) {
+      console.error('错误响应数据:', error.response.data)
+      
+      // 显示详细的验证错误信息
+      if (error.response.data && error.response.data.detail) {
+        let errorMsg = '数据验证失败: ';
+        
+        if (Array.isArray(error.response.data.detail)) {
+          errorMsg += error.response.data.detail.map(err => `${err.loc.join('.')}:${err.msg}`).join('; ');
+        } else {
+          errorMsg += error.response.data.detail;
+        }
+        
+        ElMessage.error(errorMsg)
+        return;
+      }
+    }
+    
+    ElMessage.error('保存血糖数据失败，请稍后再试')
   } finally {
     importing.value = false
   }
 }
 
-// 分析血糖数据并检查异常
+// 分析血糖数据
 const analyzeGlucoseData = async () => {
   try {
-    const response = await apiClient.post('/api/v1/glucose-monitor/analyze', {
-      hours: 24 // 分析最近24小时的数据
-    })
+    // 获取最近的血糖数据
+    const recentResponse = await apiClient.get('/api/v1/glucose/recent', {
+      params: {
+        days: 1 // 获取最近1天的数据
+      }
+    });
     
-    const result = response.data
-    
-    // 如果有警报，添加到警报列表
-    if (result.has_alerts && result.alerts && result.alerts.length > 0) {
-      // 清空旧的警报
-      glucoseAlerts.value = []
-      
-      // 添加新警报
-      result.alerts.forEach((alert: any) => {
-        let title = ''
-        let message = ''
-        let type: 'warning' | 'error' = 'warning'
-        
-        if (alert.type === 'low_glucose') {
-          title = '低血糖警报'
-          message = `检测到血糖值 ${alert.value} mmol/L，低于正常范围 ${alert.threshold} mmol/L`
-          type = alert.severity === 'high' ? 'error' : 'warning'
-        } else if (alert.type === 'high_glucose') {
-          title = '高血糖警报'
-          message = `检测到血糖值 ${alert.value} mmol/L，高于正常范围 ${alert.threshold} mmol/L`
-          type = alert.severity === 'high' ? 'error' : 'warning'
-        } else if (alert.type === 'rapid_rise') {
-          title = '血糖快速上升警报'
-          message = `检测到血糖快速上升 ${alert.value.toFixed(1)} mmol/L/小时`
-          type = 'warning'
-        } else if (alert.type === 'rapid_drop') {
-          title = '血糖快速下降警报'
-          message = `检测到血糖快速下降 ${alert.value.toFixed(1)} mmol/L/小时`
-          type = 'error'
-        }
-        
-        glucoseAlerts.value.push({
-          title,
-          message,
-          type
-        })
-      })
+    if (!recentResponse.data || recentResponse.data.length === 0) {
+      console.log('没有最近的血糖数据可供分析');
+      return null;
     }
     
-    return result
+    const records = recentResponse.data;
+    console.log('获取到最近的血糖数据:', records);
+    
+    // 分析血糖数据
+    const highThreshold = 7.8; // 高血糖阈值
+    const lowThreshold = 3.9; // 低血糖阈值
+    
+    const highRecords = records.filter(record => record.value > highThreshold);
+    const lowRecords = records.filter(record => record.value < lowThreshold);
+    
+    // 生成警报
+    if (highRecords.length > 0 || lowRecords.length > 0) {
+      let alertMessage = '';
+      
+      if (highRecords.length > 0) {
+        const latestHigh = highRecords.sort((a, b) => 
+          new Date(b.measured_at).getTime() - new Date(a.measured_at).getTime()
+        )[0];
+        
+        alertMessage += `检测到${highRecords.length}次高血糖记录，最近一次为${dayjs(latestHigh.measured_at).format('MM-DD HH:mm')}，血糖值${latestHigh.value.toFixed(1)}mmol/L。`;
+      }
+      
+      if (lowRecords.length > 0) {
+        if (alertMessage) alertMessage += ' ';
+        
+        const latestLow = lowRecords.sort((a, b) => 
+          new Date(b.measured_at).getTime() - new Date(a.measured_at).getTime()
+        )[0];
+        
+        alertMessage += `检测到${lowRecords.length}次低血糖记录，最近一次为${dayjs(latestLow.measured_at).format('MM-DD HH:mm')}，血糖值${latestLow.value.toFixed(1)}mmol/L。`;
+      }
+      
+      // 添加警报
+      if (alertMessage) {
+        addAlert('血糖异常提醒', alertMessage, 'warning');
+      }
+    }
+    
+    // 计算统计数据
+    const sum = records.reduce((acc, record) => acc + record.value, 0);
+    const avg = sum / records.length;
+    const max = Math.max(...records.map(record => record.value));
+    const min = Math.min(...records.map(record => record.value));
+    
+    return {
+      statistics: {
+        average: avg,
+        max: max,
+        min: min,
+        count: records.length,
+        high_count: highRecords.length,
+        low_count: lowRecords.length
+      },
+      has_alerts: highRecords.length > 0 || lowRecords.length > 0
+    };
   } catch (error) {
-    console.error('分析血糖数据失败', error)
-    return null
+    console.error('分析血糖数据失败:', error);
+    return null;
   }
+}
+
+// 添加警报
+const addAlert = (title: string, message: string, type: 'success' | 'warning' | 'info' | 'error' = 'warning') => {
+  glucoseAlerts.value.push({
+    title,
+    message,
+    type
+  })
 }
 
 // 移除警报
@@ -561,43 +710,46 @@ const removeAlert = (index: number) => {
   glucoseAlerts.value.splice(index, 1)
 }
 
+// 组件挂载时初始化
 onMounted(async () => {
-  console.log('DashboardView组件挂载')
   try {
     // 获取血糖数据
-    const result = await fetchGlucoseData()
+    const glucoseResult = await fetchGlucoseData()
     
-    // 分析血糖数据
-    await analyzeGlucoseData()
+    // 如果有血糖数据，分析血糖数据
+    if (glucoseResult?.hasData) {
+      await analyzeGlucoseData()
+      await fetchGlucoseAnalysis()
+    }
     
-    // 确保DOM已经渲染完成
+    // 确保DOM已更新
     await nextTick()
-    console.log('DOM已更新，准备初始化图表')
     
-    // 延迟一点时间确保DOM完全渲染
-    setTimeout(() => {
-      if (glucoseChartRef.value && hasGlucoseData.value) {
-        // 强制设置容器尺寸
-        glucoseChartRef.value.style.height = '300px'
-        glucoseChartRef.value.style.width = '100%'
-        
-        console.log('组件挂载时初始化图表')
-        initGlucoseChart()
-      } else {
-        console.error('组件挂载时图表容器不存在或无数据')
-      }
-    }, 200)
+    // 初始化图表
+    if (hasGlucoseData.value) {
+      initGlucoseChart()
+    }
     
-    // 加载完成
-    loading.value = false
+    // 设置定时检查血糖数据的定时器（每30分钟检查一次）
+    const checkInterval = 30 * 60 * 1000; // 30分钟
+    glucoseCheckTimer.value = setInterval(async () => {
+      console.log('定时检查血糖数据...');
+      await analyzeGlucoseData();
+    }, checkInterval);
     
-    // 获取其他数据（可以添加实际API调用）
-    // await fetchHealthMetrics()
-    // await fetchDietRecords()
   } catch (error) {
-    console.error('获取仪表盘数据失败', error)
+    console.error('初始化数据失败:', error)
+    ElMessage.error('加载数据失败，请刷新页面重试')
   } finally {
     loading.value = false
+  }
+})
+
+// 在组件卸载时清除定时器
+onUnmounted(() => {
+  if (glucoseCheckTimer.value) {
+    clearInterval(glucoseCheckTimer.value);
+    glucoseCheckTimer.value = null;
   }
 })
 
@@ -950,6 +1102,187 @@ const goToHealthData = () => {
 const goToDietRecord = () => {
   router.push('/diet')
 }
+
+// 获取血糖智能分析
+const fetchGlucoseAnalysis = async () => {
+  if (!hasGlucoseData.value) return
+
+  try {
+    loadingAnalysis.value = true
+    
+    // 获取最近记录的血糖数据
+    const recentResponse = await apiClient.get('/api/v1/glucose/recent', {
+      params: { days: 3 }
+    })
+    
+    if (!recentResponse.data || recentResponse.data.length < 3) {
+      hasAnalysisData.value = false
+      loadingAnalysis.value = false
+      return
+    }
+    
+    // 获取统计数据
+    const statsResponse = await apiClient.get('/api/v1/glucose/statistics', {
+      params: { period: 'week' }
+    })
+    
+    if (statsResponse.data) {
+      // 构建分析数据结构
+      const records = recentResponse.data
+      const stats = statsResponse.data
+      
+      // 计算标准差
+      let sum = 0
+      let sumSquares = 0
+      records.forEach(record => {
+        sum += record.value
+        sumSquares += record.value * record.value
+      })
+      const mean = sum / records.length
+      const variance = sumSquares / records.length - mean * mean
+      const std = Math.sqrt(variance)
+      
+      // 计算达标率
+      const inRangeCount = records.filter(r => r.value >= 3.9 && r.value <= 7.8).length
+      const inRangePercentage = (inRangeCount / records.length) * 100
+      
+      // 计算高低血糖比例
+      const highCount = records.filter(r => r.value > 7.8).length
+      const lowCount = records.filter(r => r.value < 3.9).length
+      const highPercentage = (highCount / records.length) * 100
+      const lowPercentage = (lowCount / records.length) * 100
+      
+      // 生成简单的建议文本
+      let advice = '根据您最近三天的血糖记录分析：\n\n'
+      
+      if (mean > 7.8) {
+        advice += '您的平均血糖偏高，建议控制碳水化合物摄入，增加运动量。\n\n'
+      } else if (mean < 3.9) {
+        advice += '您的平均血糖偏低，请注意及时补充碳水化合物，避免低血糖发生。\n\n'
+      } else {
+        advice += '您的平均血糖处于正常范围，请继续保持良好的生活方式。\n\n'
+      }
+      
+      if (std > 2.0) {
+        advice += '您的血糖波动较大，建议规律三餐，避免暴饮暴食，监测血糖的频率可以适当增加。\n\n'
+      }
+      
+      if (inRangePercentage < 70) {
+        advice += `您的血糖达标率为${inRangePercentage.toFixed(0)}%，低于理想水平(70%)，建议咨询医生调整治疗方案。\n\n`
+      }
+      
+      advice += '请记住，良好的饮食习惯、适当的运动和按时服药是控制血糖的关键。'
+      
+      // 更新分析数据
+      glucoseAnalysis.value = {
+        statistics: {
+          average: mean,
+          max: stats.max_value || 0,
+          min: stats.min_value || 0,
+          std: std,
+          in_range_percentage: inRangePercentage,
+          high_percentage: highPercentage,
+          low_percentage: lowPercentage
+        },
+        patterns: {},
+        advice: advice,
+        record_count: records.length,
+        updated_at: new Date().toISOString()
+      }
+      
+      hasAnalysisData.value = true
+    } else {
+      hasAnalysisData.value = false
+      ElMessage.info('暂无足够的血糖数据进行分析')
+    }
+  } catch (error) {
+    console.error('获取血糖分析失败:', error)
+    ElMessage.error('获取血糖分析失败，请稍后再试')
+    hasAnalysisData.value = false
+  } finally {
+    loadingAnalysis.value = false
+  }
+}
+
+// 辅助方法：根据血糖值获取CSS类
+const getValueClass = (value) => {
+  if (value > 10.0) return 'high-value'
+  if (value < 3.9) return 'low-value'
+  return 'normal-value'
+}
+
+// 辅助方法：根据达标率获取CSS类
+const getRangeClass = (percentage) => {
+  if (percentage >= 70) return 'good-range'
+  if (percentage >= 50) return 'average-range'
+  return 'poor-range'
+}
+
+// 辅助方法：根据标准差获取CSS类
+const getStdClass = (std) => {
+  if (std <= 1.5) return 'stable-std'
+  if (std <= 2.5) return 'moderate-std'
+  return 'unstable-std'
+}
+
+// 辅助方法：根据标准差获取波动性描述
+const getVariabilityText = (std) => {
+  if (std <= 1.5) return '稳定'
+  if (std <= 2.5) return '一般'
+  return '波动大'
+}
+
+// 截断建议文本，显示预览
+const truncateAdvice = (text, maxLength) => {
+  if (!text) return ''
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
+
+// 显示完整建议
+const showFullAdvice = () => {
+  ElMessageBox.alert(
+    `<div style="white-space: pre-line;">${glucoseAnalysis.value.advice}</div>`,
+    '血糖管理建议',
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '我知道了',
+      customClass: 'advice-dialog'
+    }
+  )
+}
+
+// 同步设备数据
+const syncDevice = async () => {
+  try {
+    ElMessage.info('开始同步设备数据...')
+    
+    // 直接刷新血糖数据，不调用不存在的同步API
+    const result = await fetchGlucoseData()
+    
+    if (result && result.success) {
+      ElMessage.success('设备数据同步成功')
+      
+      // 分析血糖数据
+      await analyzeGlucoseData()
+      
+      // 获取三天分析
+      await fetchGlucoseAnalysis()
+      
+      // 重新初始化图表
+      if (hasGlucoseData.value) {
+        chartKey.value++ // 强制重新渲染
+        await nextTick()
+        initGlucoseChart()
+      }
+    } else {
+      ElMessage.warning('设备数据同步失败')
+    }
+  } catch (error) {
+    console.error('同步设备数据失败:', error)
+    ElMessage.error('同步设备数据失败，请检查设备连接')
+  }
+}
 </script>
 
 <style scoped>
@@ -1157,6 +1490,84 @@ const goToDietRecord = () => {
 
 .glucose-alerts .el-alert:last-child {
   margin-bottom: 0;
+}
+
+/* 智能分析相关样式 */
+.glucose-analysis {
+  margin-top: 10px;
+}
+
+.analysis-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.summary-item {
+  text-align: center;
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 4px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #606266;
+}
+
+.normal-value { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
+.high-value { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+.low-value { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+
+.good-range { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
+.average-range { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+.poor-range { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+
+.stable-std { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
+.moderate-std { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+.unstable-std { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+
+.advice-preview {
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.advice-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #409eff;
+  font-weight: 500;
+}
+
+.advice-title .el-icon {
+  margin-right: 6px;
+}
+
+.advice-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.empty-analysis {
+  padding: 15px 0;
+  text-align: center;
+}
+
+/* 对话框样式 */
+:deep(.advice-dialog .el-message-box__content) {
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {

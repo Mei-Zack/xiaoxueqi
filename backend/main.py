@@ -29,7 +29,14 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost",
-        "http://127.0.0.1"
+        "http://127.0.0.1",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        # 添加更多可能的前端源
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        # 如果在生产环境，添加实际的域名
+        # "https://your-production-domain.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],  # 允许所有方法

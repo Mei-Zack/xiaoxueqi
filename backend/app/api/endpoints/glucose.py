@@ -45,14 +45,18 @@ def read_records(
     """
     获取当前用户的血糖记录
     """
-    return get_user_glucose_records(
+    records = get_user_glucose_records(
         db=db, 
-        user_id=current_user.id, 
-        skip=skip, 
-        limit=limit,
+        user_id=current_user.id,
         start_date=start_date,
         end_date=end_date
     )
+    
+    # 手动实现分页
+    total = len(records)
+    paginated_records = records[skip:skip + limit]
+    
+    return paginated_records
 
 
 @router.get("/statistics", response_model=GlucoseStatistics)

@@ -93,10 +93,12 @@ import { ElMessage } from "element-plus";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { glucoseApi } from "../api/index";
+import { useUserStore } from "../stores/user";
 
 const router = useRouter();
 const glucoseFormRef = ref();
 const submitting = ref(false);
+const userStore = useUserStore();
 
 // 初始化表单数据
 const glucoseForm = reactive({
@@ -111,13 +113,48 @@ const glucoseForm = reactive({
 const submitGlucoseRecord = async () => {
   submitting.value = true;
   try {
-    const response = await glucoseApi.addGlucoseRecord({
+    // 检查用户ID是否存在
+    if (!userStore.user || !userStore.user.id) {
+      ElMessage.error('用户未登录或用户ID不存在');
+      submitting.value = false;
+      return;
+    }
+    
+    console.log('发送的血糖数据:', {
+      user_id: userStore.user.id,
       value: glucoseForm.value,
       measured_at: glucoseForm.measured_at,
       measurement_time: glucoseForm.measurement_time,
       measurement_method: glucoseForm.measurement_method,
       notes: glucoseForm.notes
     });
+    
+    const response = await glucoseApi.addGlucoseRecord({
+      user_id: userStore.user.id,
+      value: glucoseForm.value,
+      measured_at: glucoseForm.measured_at,
+      measurement_time: glucoseForm.measurement_time,
+      measurement_method: glucoseForm.measurement_method,
+      notes: glucoseForm.notes
+    });
+    
+    console.log('保存血糖记录响应:', response);
+    
+    // 检查血糖值是否异常
+    const highThreshold = 7.8; // 高血糖阈值
+    const lowThreshold = 3.9; // 低血糖阈值
+    
+    if (glucoseForm.value > highThreshold) {
+      ElMessage.warning({
+        message: `检测到高血糖值 ${glucoseForm.value} mmol/L，请注意控制饮食和监测血糖`,
+        duration: 5000
+      });
+    } else if (glucoseForm.value < lowThreshold) {
+      ElMessage.warning({
+        message: `检测到低血糖值 ${glucoseForm.value} mmol/L，请及时补充碳水化合物`,
+        duration: 5000
+      });
+    }
     
     ElMessage.success("血糖记录保存成功");
     resetForm();
@@ -126,6 +163,26 @@ const submitGlucoseRecord = async () => {
     // router.push("/dashboard");
   } catch (error) {
     console.error("保存血糖记录失败", error);
+    
+    // 提供更详细的错误信息
+    if (error.response) {
+      console.error('错误响应数据:', error.response.data);
+      
+      // 显示详细的验证错误信息
+      if (error.response.data && error.response.data.detail) {
+        let errorMsg = '数据验证失败: ';
+        
+        if (Array.isArray(error.response.data.detail)) {
+          errorMsg += error.response.data.detail.map(err => `${err.loc.join('.')}:${err.msg}`).join('; ');
+        } else {
+          errorMsg += error.response.data.detail;
+        }
+        
+        ElMessage.error(errorMsg);
+        return;
+      }
+    }
+    
     ElMessage.error("保存血糖记录失败");
   } finally {
     submitting.value = false;
