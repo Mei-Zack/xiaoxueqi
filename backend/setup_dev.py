@@ -41,7 +41,7 @@ def create_admin_user(db):
         admin = UserCreate(
             email="admin@example.com",
             name="系统管理员",
-            password="admin",
+            password="admin123",
             is_active=True,
             is_superuser=True
         )
@@ -68,7 +68,7 @@ def create_test_user(db):
         test_user = UserCreate(
             email="test@example.com",
             name="测试用户",
-            password="test123",
+            password="admin123",
             is_active=True
         )
         
@@ -158,13 +158,14 @@ def main():
     parser = argparse.ArgumentParser(description="开发环境设置")
     parser.add_argument("--reset", action="store_true", help="重置数据库（删除所有表并重新创建）")
     parser.add_argument("--sample-data", action="store_true", help="创建示例数据")
+    parser.add_argument("--init-db", action="store_true", help="初始化数据库")
     args = parser.parse_args()
     
     try:
         if args.reset:
             logger.info("正在重置数据库...")
             reset_db()
-        else:
+        elif args.init_db or not args.sample_data:
             logger.info("正在初始化数据库...")
             init_db()
         
@@ -183,8 +184,8 @@ def main():
             
             logger.info("开发环境设置完成！")
             logger.info("\n开发账号信息:")
-            logger.info(f"管理员: admin@example.com / admin")
-            logger.info(f"测试用户: test@example.com / test123")
+            logger.info(f"管理员: admin@example.com / admin123")
+            logger.info(f"测试用户: test@example.com / admin123")
             logger.info("\n启动应用: python main.py")
         
         finally:

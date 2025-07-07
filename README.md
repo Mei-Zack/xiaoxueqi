@@ -395,8 +395,8 @@ pip install -r requirements.txt
 2. 访问：http://localhost:5173
 3. 你应该能看到系统的登录页面
 4. 使用以下默认账户登录：
-   - 邮箱：admin@diabetes-assistant.com
-   - 密码：diabetes2024
+   - 邮箱：admin@example.com
+   - 密码：admin123
 
 ## 第六部分：使用 Navicat Premium 管理数据库
 
