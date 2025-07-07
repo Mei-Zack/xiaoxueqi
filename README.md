@@ -173,7 +173,9 @@ Ollama 让你可以在自己的电脑上运行 AI 大模型。
 
 ### 3.1 创建虚拟环境
 
-虚拟环境可以避免不同项目之间的依赖冲突。
+虚拟环境可以避免不同项目之间的依赖冲突。您可以选择使用 Python 内置的 venv 或 Anaconda 创建虚拟环境。
+
+#### 方法一：使用 Python 内置的 venv（简单方式）
 
 1. 打开命令提示符（在 Windows 搜索栏中输入"cmd"并打开）
 2. 导航到项目的后端目录：
@@ -202,6 +204,47 @@ Ollama 让你可以在自己的电脑上运行 AI 大模型。
      ```
 
    激活成功后，命令行前面会出现 `(venv)` 字样
+
+#### 方法二：使用 Anaconda 创建虚拟环境（推荐方式）
+
+Anaconda 提供了更强大的包管理和环境管理功能，特别适合数据科学和机器学习项目。
+
+1. 首先，下载并安装 Anaconda：
+   - 访问 [Anaconda 官网](https://www.anaconda.com/products/distribution)
+   - 下载适合您操作系统的安装包
+   - 按照安装向导完成安装
+
+2. 打开 Anaconda Prompt（在 Windows 搜索栏中输入"Anaconda Prompt"并打开）
+
+3. 创建一个名为 `diabetes_env` 的新环境，指定 Python 版本为 3.10：
+
+   ```
+   conda create -n diabetes_env python=3.10
+   ```
+
+4. 激活环境：
+
+   ```
+   conda activate diabetes_env
+   ```
+
+5. 导航到项目的后端目录：
+
+   ```
+   cd 路径\到\项目\diabetes-assistant\backend
+   ```
+
+6. 安装项目依赖：
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+7. 如果遇到某些包安装失败，可以尝试使用 conda 安装：
+
+   ```
+   conda install -c conda-forge package_name
+   ```
 
 ### 3.2 安装后端依赖
 
@@ -275,11 +318,7 @@ pip install -r requirements.txt
 2. 打开命令提示符，运行：
 
    ```
-<<<<<<< HEAD
    ollama pull deepseek-r1:7b
-=======
-   ollama run deepseek-r1:1.5b
->>>>>>> 8f592862b6056589a6c30f0453ee467b7493343b
    ```
 
    这将下载大约 4GB 的模型文件，取决于你的网络速度，可能需要一段时间。
@@ -413,22 +452,119 @@ Navicat Premium 是一款功能强大的数据库管理工具，可以帮助你�
 3. 选择保存位置，点击"保存"
 4. 这将创建一个包含所有数据的 SQL 文件，可用于备份或迁移
 
-## 第七部分：使用 Visual Studio Code 查看和编辑项目代码
+## 第七部分：数据库表结构
+
+本项目使用的数据库表结构已经在 `backend/diabetes_assistant.sql` 文件中定义。这个文件是由 Navicat 导出的完整数据库结构，包含了所有必要的表、字段、索引和外键约束。
+
+### 7.1 数据库初始化
+
+在首次启动后端服务时，系统会自动检查并创建所需的数据库表。这是通过 SQLAlchemy ORM 和 Alembic 迁移工具实现的。具体流程如下：
+
+1. 系统检查数据库连接
+2. 如果表不存在，会根据 ORM 模型定义自动创建表结构
+3. 如果需要，会执行预定义的数据迁移脚本
+
+您也可以手动初始化数据库：
+
+```bash
+# 在后端目录下执行
+python setup_dev.py --init-db
+```
+
+如果需要添加示例数据：
+
+```bash
+python setup_dev.py --sample-data
+```
+
+### 7.2 主要数据表说明
+
+项目包含以下主要数据表：
+
+1. **users** - 用户信息表
+   - 存储用户的基本信息、认证信息和健康目标
+   - 主要字段：id, email, name, hashed_password, gender, diabetes_type, target_glucose_min, target_glucose_max
+
+2. **glucose_records** - 血糖记录表
+   - 存储用户的血糖测量数据
+   - 主要字段：id, user_id, value, measurement_time, measurement_method, measured_at
+
+3. **diet_records** - 饮食记录表
+   - 存储用户的饮食信息
+   - 主要字段：id, user_id, meal_type, meal_time, food_items, total_carbs, total_calories
+
+4. **health_records** - 健康记录表
+   - 存储用户的综合健康信息
+   - 主要字段：id, user_id, record_date, notes
+
+5. **weight_records** - 体重记录表
+   - 存储用户的体重测量数据
+   - 主要字段：id, user_id, weight, bmi, measured_at
+
+6. **blood_pressure_records** - 血压记录表
+   - 存储用户的血压测量数据
+   - 主要字段：id, user_id, systolic, diastolic, pulse, measured_at
+
+7. **medication_records** - 药物记录表
+   - 存储用户的用药信息
+   - 主要字段：id, user_id, name, dosage, taken_at, scheduled_at
+
+8. **exercise_records** - 运动记录表
+   - 存储用户的运动信息
+   - 主要字段：id, user_id, exercise_type, duration, intensity, calories_burned
+
+9. **conversations** 和 **messages** - 对话和消息表
+   - 存储用户与智能助理的对话历史
+   - 主要字段：id, user_id, content, role, timestamp
+
+10. **knowledge_base** - 知识库表
+    - 存储糖尿病相关知识和文章
+    - 主要字段：id, title, content, tags
+
+11. **reminders** - 提醒事项表
+    - 存储用户的各类提醒
+    - 主要字段：id, user_id, title, description, reminder_type, scheduled_time
+
+### 7.3 手动导入表结构
+
+如果您希望手动导入表结构，可以使用以下方法：
+
+#### MySQL 数据库
+
+1. 确保 MySQL 服务已启动
+2. 创建数据库：
+   ```sql
+   CREATE DATABASE diabetes_assistant CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+3. 导入表结构：
+   ```bash
+   mysql -u root -p diabetes_assistant < backend/diabetes_assistant.sql
+   ```
+
+#### SQLite 数据库
+
+如果使用 SQLite，系统会自动创建数据库文件和表结构，无需手动导入。
+
+### 7.4 查看表结构
+
+您可以使用 Navicat Premium 或其他数据库管理工具查看完整的表结构。具体步骤请参考第六部分的说明。
+
+## 第八部分：使用 Visual Studio Code 查看和编辑项目代码
 
 Visual Studio Code (VSCode) 是一款功能强大的代码编辑器，可以帮助你查看和编辑项目代码。以下是使用 VSCode 的基本步骤：
 
-### 7.1 打开项目
+### 8.1 打开项目
 
 1. 打开 Visual Studio Code
 2. 点击"文件" > "打开文件夹"
 3. 导航到项目根目录（例如：`C:\Projects\diabetes-assistant`）
 4. 点击"选择文件夹"
 
-### 7.2 安装推荐扩展
+### 8.2 安装推荐扩展
 
 为了更好地开发和查看代码，需要安装一些 VSCode 扩展。下面分为必装插件和推荐插件两类：
 
-#### 7.2.1 必装插件
+#### 8.2.1 必装插件
 
 这些插件是使用项目的必要组件，请确保安装：
 
@@ -447,7 +583,7 @@ Visual Studio Code (VSCode) 是一款功能强大的代码编辑器，可以帮�
    - 直接在 VSCode 中查看和操作 SQLite 数据库文件
    - 方便在不打开 Navicat 的情况下快速查看 SQLite 数据
 
-#### 7.2.2 推荐插件
+#### 8.2.2 推荐插件
 
 这些插件可以提升开发体验，建议安装：
 
@@ -480,7 +616,7 @@ Visual Studio Code (VSCode) 是一款功能强大的代码编辑器，可以帮�
    - YAML 文件支持，提供语法高亮和验证
    - 编辑配置文件时有用
 
-#### 7.2.3 查看已安装的插件
+#### 8.2.3 查看已安装的插件
 
 要检查您是否已安装所需的插件，可以按照以下步骤操作：
 
@@ -489,13 +625,13 @@ Visual Studio Code (VSCode) 是一款功能强大的代码编辑器，可以帮�
 3. 在扩展面板上方，可以看到"已安装"选项，点击它即可查看所有已安装的插件
 4. 如果列表中没有某个必要的插件，在搜索框中输入插件名称进行安装
 
-### 7.3 配置 Python 解释器
+### 8.3 配置 Python 解释器
 
 1. 按 Ctrl+Shift+P 打开命令面板
 2. 输入"Python: Select Interpreter"并选择
 3. 选择项目虚拟环境（通常显示为 ./venv 或 ./backend/venv）
 
-### 7.4 浏览项目结构
+### 8.4 浏览项目结构
 
 VSCode 左侧的文件浏览器可以帮助你浏览整个项目结构：
 
@@ -506,7 +642,7 @@ VSCode 左侧的文件浏览器可以帮助你浏览整个项目结构：
   - `src/` 包含主要的源代码
   - `src/views/` 包含所有页面组件
 
-### 7.5 编辑代码
+### 8.5 编辑代码
 
 1. 在文件浏览器中点击任何文件以打开
 2. 编辑文件内容
@@ -514,16 +650,16 @@ VSCode 左侧的文件浏览器可以帮助你浏览整个项目结构：
 4. 如果你修改了后端代码，由于启动时使用了 `--reload` 参数，服务会自动重启
 5. 如果你修改了前端代码，页面会自动刷新以反映更改
 
-### 7.6 使用终端
+### 8.6 使用终端
 
 VSCode 内置了终端，可以直接在编辑器中运行命令：
 
 1. 点击顶部菜单的"终端" > "新建终端"（或按 Ctrl+`)
 2. 在终端中，你可以运行前面提到的所有命令
 
-## 第八部分：常见问题解决
+## 第九部分：常见问题解决
 
-### 8.1 后端启动问题
+### 9.1 后端启动问题
 
 #### 问题：找不到模块或库
 
@@ -557,7 +693,7 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
   2. 或者使用不同的端口：`python -m uvicorn main:app --reload --port 8001`
   3. 如果使用不同的端口，记得同时修改前端的 `.env.local` 文件中的 API 地址
 
-### 8.2 前端启动问题
+### 9.2 前端启动问题
 
 #### 问题：Node.js 版本过低
 
@@ -580,7 +716,7 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
   2. 检查前端的 `.env.local` 文件中的 API 地址是否正确
   3. 如果后端使用了不同的端口，相应更新前端配置
 
-### 8.3 Ollama 模型问题
+### 9.3 Ollama 模型问题
 
 #### 问题：模型下载失败
 
@@ -606,7 +742,7 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
   2. 尝试使用较小的模型：修改 `.env` 文件中的 `MODEL_NAME=tinyllama`
   3. 确保 `MODEL_DEVICE=cpu` 设置已添加到 `.env` 文件中
 
-### 8.4 Navicat Premium 问题
+### 9.4 Navicat Premium 问题
 
 #### 问题：连接数据库失败
 
@@ -631,35 +767,35 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
   2. 重新运行"无限试用 Navicat.bat"脚本
   3. 确保"winmm.dll"文件已正确复制到安装目录
 
-## 第九部分：系统使用指南
+## 第十部分：系统使用指南
 
-### 9.1 用户管理
+### 10.1 用户管理
 
 - **注册新用户**：点击登录页面的"注册"按钮
 - **登录**：使用邮箱和密码登录
 - **修改个人信息**：登录后，点击右上角用户头像，选择"设置"
 
-### 9.2 血糖管理
+### 10.2 血糖管理
 
 - **添加血糖记录**：在"血糖管理"页面，点击"添加记录"按钮
 - **查看血糖趋势**：在"血糖管理"页面，可以查看血糖变化图表
 - **设置目标**：在"设置"页面，可以设置血糖目标范围
 
-### 9.3 饮食管理
+### 10.3 饮食管理
 
 - **记录饮食**：在"饮食管理"页面，点击"添加饮食记录"
 - **查看营养分析**：系统会自动分析记录的食物营养成分
 - **获取饮食建议**：基于血糖和饮食记录，系统会提供个性化建议
 
-### 9.4 智能助理
+### 10.4 智能助理
 
 - **咨询健康问题**：在"智能助理"页面，直接输入问题
 - **查看历史对话**：所有与助理的对话都会保存，可以随时查看
 - **清除对话历史**：如果需要，可以点击"清除历史"按钮
 
-## 第十部分：其他资源
+## 第十一部分：其他资源
 
-### 10.1 项目文档
+### 11.1 项目文档
 
 - **主项目文档**：位于项目根目录的 `README.md`
 - **后端文档**：位于 `backend/README.md`
@@ -667,7 +803,7 @@ VSCode 内置了终端，可以直接在编辑器中运行命令：
 - **产品需求文档**：位于 `docx/prd.md`
 - **需求分析与设计**：位于 `docx/需求分析与设计.md`
 
-### 10.2 寻求帮助
+### 11.2 寻求帮助
 
 如果你在使用过程中遇到任何问题，可以：
 
