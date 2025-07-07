@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -17,6 +18,7 @@ from app.services.assistant import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/conversations", response_model=ConversationSchema)
@@ -35,7 +37,9 @@ def create_new_conversation(
             detail="只能为自己创建对话"
         )
     
-    return create_conversation(db=db, conv_in=conv_in)
+    conversation = create_conversation(db=db, conv_in=conv_in)
+    db.commit()
+    return conversation
 
 
 @router.get("/conversations", response_model=List[ConversationSchema])
@@ -101,7 +105,9 @@ def update_conversation_title(
             detail="无权更新此对话"
         )
     
-    return update_conversation(db=db, conversation_id=conversation_id, conv_in=conv_in)
+    updated_conv = update_conversation(db=db, conversation_id=conversation_id, conv_in=conv_in)
+    db.commit()
+    return updated_conv
 
 
 @router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -128,6 +134,7 @@ def delete_conversation_endpoint(
         )
     
     delete_conversation(db=db, conversation_id=conversation_id)
+    db.commit()
 
 
 @router.post("/messages", response_model=MessageSchema)
@@ -155,7 +162,9 @@ def create_new_message(
         )
     
     # 创建消息并获取助手回复
-    return create_message(db=db, message_in=message_in)
+    message = create_message(db=db, message_in=message_in)
+    db.commit()
+    return message
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=List[MessageSchema])
@@ -239,6 +248,7 @@ def chat_with_assistant(
     
     # 保存用户消息并获取助手回复
     assistant_message = create_message(db=db, message_in=message_in)
+    db.commit()
     
     # 返回响应
     sources = None
@@ -284,4 +294,5 @@ def clear_chat_history(
     
     # 删除所有对话
     for conversation in conversations:
-        delete_conversation(db=db, conversation_id=conversation.id) 
+        delete_conversation(db=db, conversation_id=conversation.id)
+    db.commit() 

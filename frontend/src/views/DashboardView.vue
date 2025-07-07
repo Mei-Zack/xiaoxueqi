@@ -120,6 +120,62 @@
       
       <!-- 右侧边栏 -->
       <el-col :xs="24" :sm="24" :md="8" :lg="6">
+        <!-- 血糖监测卡片 -->
+        <el-card class="glucose-card">
+          <template #header>
+            <div class="card-header">
+              <span>血糖监测</span>
+              <el-button type="text" @click="goToGlucoseRecord">
+                查看更多
+              </el-button>
+            </div>
+          </template>
+          <div v-if="loading" class="loading-container">
+            <el-skeleton :rows="3" animated />
+          </div>
+          <div v-else>
+            <!-- 血糖警报通知 -->
+            <div v-if="glucoseAlerts.length > 0" class="glucose-alerts">
+              <el-alert
+                v-for="(alert, index) in glucoseAlerts"
+                :key="index"
+                :title="alert.title"
+                :description="alert.message"
+                :type="alert.type"
+                :closable="true"
+                show-icon
+                @close="removeAlert(index)"
+              />
+            </div>
+            
+            <!-- 快速导入血糖数据 -->
+            <div class="quick-import">
+              <h4>快速记录血糖</h4>
+              <el-form :model="glucoseForm" label-position="top" size="small">
+                <el-form-item label="血糖值 (mmol/L)">
+                  <el-input-number v-model="glucoseForm.value" :min="1" :max="30" :precision="1" :step="0.1" style="width: 100%" />
+                </el-form-item>
+                <el-form-item label="测量类型">
+                  <el-select v-model="glucoseForm.measurement_time" placeholder="请选择" style="width: 100%">
+                    <el-option label="早餐前" value="BEFORE_BREAKFAST" />
+                    <el-option label="早餐后" value="AFTER_BREAKFAST" />
+                    <el-option label="午餐前" value="BEFORE_LUNCH" />
+                    <el-option label="午餐后" value="AFTER_LUNCH" />
+                    <el-option label="晚餐前" value="BEFORE_DINNER" />
+                    <el-option label="晚餐后" value="AFTER_DINNER" />
+                    <el-option label="睡前" value="BEFORE_SLEEP" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="importGlucoseData" :loading="importing" style="width: 100%">
+                    保存记录
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+        </el-card>
+        
         <!-- 今日提醒 -->
         <el-card class="reminder-card">
           <template #header>
@@ -165,7 +221,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { Plus, ChatLineRound, Clock, CircleCheck, Refresh } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
-import { glucoseApi, healthApi, dietApi, knowledgeApi } from '../api'
+import { glucoseApi, healthApi, dietApi, knowledgeApi, apiClient } from '../api'
 import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 
@@ -173,9 +229,8 @@ import { ElMessage } from 'element-plus'
 interface GlucoseRecord {
   id: string;
   value: number;
-  measured_at: string | Date;
+  measured_at: string;
   measurement_time: string;
-  measurement_method: string;
   notes: string;
   user_id: string;
 }
@@ -192,6 +247,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(true)
+const importing = ref(false)
 const glucosePeriod = ref('week')
 const glucoseChartRef = ref<HTMLElement | null>(null)
 const glucoseChart = ref<echarts.ECharts | null>(null)
@@ -210,6 +266,7 @@ const healthMetrics = ref({
 
 const hasGlucoseData = ref(false)
 const hasDietData = ref(true)
+const glucoseAlerts = ref<Array<{title: string, message: string, type: 'success' | 'warning' | 'info' | 'error'}>>([])
 
 const dietRecords = ref([
   { time: '早餐 08:30', name: '全麦面包+牛奶+鸡蛋', calories: 350 },
@@ -245,6 +302,12 @@ const knowledgeArticles = ref([
 
 // 血糖数据
 const glucoseRecords = ref<GlucoseRecord[]>([])
+
+// 快速导入血糖表单
+const glucoseForm = ref({
+  value: 5.6,
+  measurement_time: 'BEFORE_BREAKFAST'
+})
 
 // 从API获取血糖数据
 const fetchGlucoseData = async () => {
@@ -335,9 +398,9 @@ const processGlucoseData = () => {
     }
     
     // 根据测量时间类型分组
-    if (['before_breakfast', 'before_lunch', 'before_dinner'].includes(record.measurement_time)) {
+    if (['BEFORE_BREAKFAST', 'BEFORE_LUNCH', 'BEFORE_DINNER', 'before_breakfast', 'before_lunch', 'before_dinner'].includes(record.measurement_time.toUpperCase())) {
       recordsByDate[date].fasting.push(record.value)
-    } else if (['after_breakfast', 'after_lunch', 'after_dinner'].includes(record.measurement_time)) {
+    } else if (['AFTER_BREAKFAST', 'AFTER_LUNCH', 'AFTER_DINNER', 'after_breakfast', 'after_lunch', 'after_dinner'].includes(record.measurement_time.toUpperCase())) {
       recordsByDate[date].afterMeal.push(record.value)
     }
   })
@@ -406,31 +469,127 @@ const processGlucoseData = () => {
   return { dates, fastingData, afterMealData }
 }
 
+// 导入血糖数据
+const importGlucoseData = async () => {
+  if (!glucoseForm.value.value || !glucoseForm.value.measurement_time) {
+    ElMessage.warning('请填写完整的血糖数据')
+    return
+  }
+  
+  importing.value = true
+  try {
+    const response = await apiClient.post('/api/v1/glucose', {
+      value: glucoseForm.value.value,
+      measured_at: dayjs().format('YYYY-MM-DDTHH:mm:00Z'),
+      measurement_time: glucoseForm.value.measurement_time,
+      notes: '从仪表盘快速添加'
+    })
+    
+    ElMessage.success(response.data.message || '血糖数据保存成功')
+    
+    // 重置表单
+    glucoseForm.value.value = 5.6
+    
+    // 刷新血糖数据
+    await fetchGlucoseData()
+    
+    // 分析血糖数据
+    await analyzeGlucoseData()
+  } catch (error) {
+    console.error('保存血糖数据失败', error)
+    ElMessage.error('保存血糖数据失败')
+  } finally {
+    importing.value = false
+  }
+}
+
+// 分析血糖数据并检查异常
+const analyzeGlucoseData = async () => {
+  try {
+    const response = await apiClient.post('/api/v1/glucose-monitor/analyze', {
+      hours: 24 // 分析最近24小时的数据
+    })
+    
+    const result = response.data
+    
+    // 如果有警报，添加到警报列表
+    if (result.has_alerts && result.alerts && result.alerts.length > 0) {
+      // 清空旧的警报
+      glucoseAlerts.value = []
+      
+      // 添加新警报
+      result.alerts.forEach((alert: any) => {
+        let title = ''
+        let message = ''
+        let type: 'warning' | 'error' = 'warning'
+        
+        if (alert.type === 'low_glucose') {
+          title = '低血糖警报'
+          message = `检测到血糖值 ${alert.value} mmol/L，低于正常范围 ${alert.threshold} mmol/L`
+          type = alert.severity === 'high' ? 'error' : 'warning'
+        } else if (alert.type === 'high_glucose') {
+          title = '高血糖警报'
+          message = `检测到血糖值 ${alert.value} mmol/L，高于正常范围 ${alert.threshold} mmol/L`
+          type = alert.severity === 'high' ? 'error' : 'warning'
+        } else if (alert.type === 'rapid_rise') {
+          title = '血糖快速上升警报'
+          message = `检测到血糖快速上升 ${alert.value.toFixed(1)} mmol/L/小时`
+          type = 'warning'
+        } else if (alert.type === 'rapid_drop') {
+          title = '血糖快速下降警报'
+          message = `检测到血糖快速下降 ${alert.value.toFixed(1)} mmol/L/小时`
+          type = 'error'
+        }
+        
+        glucoseAlerts.value.push({
+          title,
+          message,
+          type
+        })
+      })
+    }
+    
+    return result
+  } catch (error) {
+    console.error('分析血糖数据失败', error)
+    return null
+  }
+}
+
+// 移除警报
+const removeAlert = (index: number) => {
+  glucoseAlerts.value.splice(index, 1)
+}
+
 onMounted(async () => {
   console.log('DashboardView组件挂载')
   try {
     // 获取血糖数据
     const result = await fetchGlucoseData()
     
-    if (result.success && result.hasData) {
-      // 确保DOM已经渲染完成
-      await nextTick()
-      console.log('DOM已更新，准备初始化图表')
-      
-      // 延迟一点时间确保DOM完全渲染
-      setTimeout(() => {
-        if (glucoseChartRef.value) {
-          // 强制设置容器尺寸
-          glucoseChartRef.value.style.height = '300px'
-          glucoseChartRef.value.style.width = '100%'
-          
-          console.log('组件挂载时初始化图表')
-          initGlucoseChart()
-        } else {
-          console.error('组件挂载时图表容器不存在')
-        }
-      }, 200)
-    }
+    // 分析血糖数据
+    await analyzeGlucoseData()
+    
+    // 确保DOM已经渲染完成
+    await nextTick()
+    console.log('DOM已更新，准备初始化图表')
+    
+    // 延迟一点时间确保DOM完全渲染
+    setTimeout(() => {
+      if (glucoseChartRef.value && hasGlucoseData.value) {
+        // 强制设置容器尺寸
+        glucoseChartRef.value.style.height = '300px'
+        glucoseChartRef.value.style.width = '100%'
+        
+        console.log('组件挂载时初始化图表')
+        initGlucoseChart()
+      } else {
+        console.error('组件挂载时图表容器不存在或无数据')
+      }
+    }, 200)
+    
+    // 加载完成
+    loading.value = false
     
     // 获取其他数据（可以添加实际API调用）
     // await fetchHealthMetrics()
@@ -777,7 +936,7 @@ const readArticle = (id: number) => {
 }
 
 const goToGlucoseRecord = () => {
-  router.push('/glucose')
+  router.push('/glucose-record')
 }
 
 const goToAssistant = () => {
@@ -968,6 +1127,36 @@ const goToDietRecord = () => {
 
 .loading-container {
   padding: 20px 0;
+}
+
+.glucose-card {
+  margin-bottom: 20px;
+}
+
+.quick-import {
+  padding: 10px;
+}
+
+.quick-import h4 {
+  margin-bottom: 10px;
+  color: #409eff;
+  font-weight: 500;
+}
+
+.quick-import .el-form {
+  margin-bottom: 10px;
+}
+
+.glucose-alerts {
+  margin-bottom: 15px;
+}
+
+.glucose-alerts .el-alert {
+  margin-bottom: 8px;
+}
+
+.glucose-alerts .el-alert:last-child {
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {

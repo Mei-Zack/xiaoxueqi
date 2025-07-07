@@ -57,6 +57,14 @@ import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts';
 import { useUserStore } from '@/stores/user';
 import { fetchGlucoseRecords, fetchGlucoseStatistics } from '@/api/glucose';
+import dayjs from 'dayjs';
+
+// 计算数组平均值的辅助函数
+const average = (arr: number[]): number | null => {
+  if (!arr || arr.length === 0) return null;
+  const sum = arr.reduce((a, b) => a + b, 0);
+  return Number((sum / arr.length).toFixed(1));
+};
 
 export default defineComponent({
   name: 'GlucoseChart',
@@ -220,15 +228,71 @@ export default defineComponent({
       });
     };
     
-    // 处理数据格式
-    const processData = (records: any[]) => {
-      return records.map(record => {
-        return [
-          new Date(record.measured_at),
-          record.value,
-          record.measurement_time
-        ];
-      }).sort((a, b) => (a[0] as Date).getTime() - (b[0] as Date).getTime());
+    // 处理数据，将记录按日期和时间类型分组
+    const processData = (records) => {
+      // 按日期分组
+      const recordsByDate = {};
+      
+      records.forEach(record => {
+        const date = dayjs(record.measured_at).format('YYYY-MM-DD');
+        if (!recordsByDate[date]) {
+          recordsByDate[date] = [];
+        }
+        recordsByDate[date].push(record);
+      });
+      
+      // 转换为图表数据
+      const chartData = [];
+      
+      Object.keys(recordsByDate).forEach(date => {
+        const dateRecords = recordsByDate[date];
+        
+        // 按测量类型分组
+        const byType = {
+          BEFORE_BREAKFAST: [],
+          AFTER_BREAKFAST: [],
+          BEFORE_LUNCH: [],
+          AFTER_LUNCH: [],
+          BEFORE_DINNER: [],
+          AFTER_DINNER: [],
+          BEFORE_SLEEP: []
+        };
+        
+        dateRecords.forEach(record => {
+          // 确保measurement_time是大写
+          const measurementType = record.measurement_time.toUpperCase();
+          if (byType[measurementType]) {
+            byType[measurementType].push(record.value);
+          }
+        });
+        
+        // 计算每种类型的平均值
+        const entry = {
+          date: date,
+          BEFORE_BREAKFAST: average(byType.BEFORE_BREAKFAST),
+          AFTER_BREAKFAST: average(byType.AFTER_BREAKFAST),
+          BEFORE_LUNCH: average(byType.BEFORE_LUNCH),
+          AFTER_LUNCH: average(byType.AFTER_LUNCH),
+          BEFORE_DINNER: average(byType.BEFORE_DINNER),
+          AFTER_DINNER: average(byType.AFTER_DINNER),
+          BEFORE_SLEEP: average(byType.BEFORE_SLEEP)
+        };
+        
+        chartData.push(entry);
+      });
+      
+      // 按日期排序
+      return chartData.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+    };
+    
+    // 创建散点图数据
+    const createScatterData = (records) => {
+      return records.map(record => ({
+        x: new Date(record.measured_at),
+        y: record.value,
+        type: record.measurement_time.toUpperCase(), // 确保使用大写
+        id: record.id
+      }));
     };
     
     // 获取数据

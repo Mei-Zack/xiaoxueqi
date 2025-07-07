@@ -39,8 +39,6 @@ def create_conversation(db: Session, conv_in: ConversationCreate) -> Conversatio
     
     # 保存到数据库
     db.add(db_conversation)
-    db.commit()
-    db.refresh(db_conversation)
     
     # 如果有初始消息，添加用户消息
     if conv_in.initial_message:
@@ -79,8 +77,7 @@ def create_conversation(db: Session, conv_in: ConversationCreate) -> Conversatio
             )
             db.add(error_message)
         
-        db.commit()
-    
+    db.refresh(db_conversation)
     return db_conversation
 
 
@@ -113,7 +110,7 @@ def update_conversation(db: Session, conversation_id: str, conv_in: Conversation
             setattr(db_conversation, field, value)
     
     # 保存到数据库
-    db.commit()
+    db.add(db_conversation)
     db.refresh(db_conversation)
     
     return db_conversation
@@ -133,7 +130,6 @@ def delete_conversation(db: Session, conversation_id: str) -> bool:
     
     # 删除对话
     db.delete(db_conversation)
-    db.commit()
     
     return True
 
@@ -160,7 +156,6 @@ def create_message(db: Session, message_in: MessageCreate) -> Message:
     
     # 保存到数据库
     db.add(db_message)
-    db.commit()
     db.refresh(db_message)
     
     # 如果是用户消息，生成助手回复
@@ -184,12 +179,11 @@ def create_message(db: Session, message_in: MessageCreate) -> Message:
             
             # 保存到数据库
             db.add(assistant_message)
-            db.commit()
             db.refresh(assistant_message)
             
             # 更新对话的更新时间
             conversation.updated_at = datetime.now()
-            db.commit()
+            db.add(conversation)
             
             return assistant_message
         except Exception as e:
@@ -203,12 +197,11 @@ def create_message(db: Session, message_in: MessageCreate) -> Message:
                 message_metadata={"error": str(e)}
             )
             db.add(error_message)
-            db.commit()
             db.refresh(error_message)
             
             # 更新对话的更新时间
             conversation.updated_at = datetime.now()
-            db.commit()
+            db.add(conversation)
             
             return error_message
     

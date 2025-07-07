@@ -12,6 +12,7 @@ const AssistantView = () => import('../views/AssistantView.vue')
 const KnowledgeView = () => import('../views/KnowledgeView.vue')
 const SettingsView = () => import('../views/SettingsView.vue')
 const NotFoundView = () => import('../views/NotFoundView.vue')
+const GlucoseRecordView = () => import('../views/GlucoseRecordView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -72,6 +73,12 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/glucose-record',
+      name: 'glucose-record',
+      component: GlucoseRecordView,
       meta: { requiresAuth: true }
     },
     {

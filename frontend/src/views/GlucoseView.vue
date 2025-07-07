@@ -33,7 +33,9 @@
               <el-date-picker
                 v-model="glucoseForm.measured_at"
                 type="datetime"
-                placeholder="选择日期和时间"
+                placeholder="选择日期时间"
+                format="YYYY-MM-DD HH:mm"
+                value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
           </el-col>
@@ -44,15 +46,15 @@
             v-model="glucoseForm.measurement_time"
             placeholder="请选择测量类型"
           >
-            <el-option label="早餐前" value="before_breakfast" />
-            <el-option label="早餐后" value="after_breakfast" />
-            <el-option label="午餐前" value="before_lunch" />
-            <el-option label="午餐后" value="after_lunch" />
-            <el-option label="晚餐前" value="before_dinner" />
-            <el-option label="晚餐后" value="after_dinner" />
-            <el-option label="睡前" value="before_sleep" />
-            <el-option label="半夜" value="midnight" />
-            <el-option label="其他" value="other" />
+            <el-option label="早餐前" value="BEFORE_BREAKFAST" />
+            <el-option label="早餐后" value="AFTER_BREAKFAST" />
+            <el-option label="午餐前" value="BEFORE_LUNCH" />
+            <el-option label="午餐后" value="AFTER_LUNCH" />
+            <el-option label="晚餐前" value="BEFORE_DINNER" />
+            <el-option label="晚餐后" value="AFTER_DINNER" />
+            <el-option label="睡前" value="BEFORE_SLEEP" />
+            <el-option label="半夜" value="MIDNIGHT" />
+            <el-option label="其他" value="OTHER" />
           </el-select>
         </el-form-item>
 
@@ -61,10 +63,10 @@
             v-model="glucoseForm.measurement_method"
             placeholder="请选择测量方法"
           >
-            <el-option label="指尖采血" value="finger_stick" />
-            <el-option label="连续监测" value="continuous_monitor" />
-            <el-option label="实验室检验" value="lab_test" />
-            <el-option label="其他" value="other" />
+            <el-option label="指尖采血" value="FINGER_STICK" />
+            <el-option label="连续监测" value="CONTINUOUS_MONITOR" />
+            <el-option label="实验室检验" value="LAB_TEST" />
+            <el-option label="其他" value="OTHER" />
           </el-select>
         </el-form-item>
         
@@ -93,15 +95,15 @@
           <div class="header-actions">
             <el-select v-model="filterType" placeholder="筛选类型" size="small">
               <el-option label="全部" value="" />
-              <el-option label="早餐前" value="before_breakfast" />
-              <el-option label="早餐后" value="after_breakfast" />
-              <el-option label="午餐前" value="before_lunch" />
-              <el-option label="午餐后" value="after_lunch" />
-              <el-option label="晚餐前" value="before_dinner" />
-              <el-option label="晚餐后" value="after_dinner" />
-              <el-option label="睡前" value="before_sleep" />
-              <el-option label="半夜" value="midnight" />
-              <el-option label="其他" value="other" />
+              <el-option label="早餐前" value="BEFORE_BREAKFAST" />
+              <el-option label="早餐后" value="AFTER_BREAKFAST" />
+              <el-option label="午餐前" value="BEFORE_LUNCH" />
+              <el-option label="午餐后" value="AFTER_LUNCH" />
+              <el-option label="晚餐前" value="BEFORE_DINNER" />
+              <el-option label="晚餐后" value="AFTER_DINNER" />
+              <el-option label="睡前" value="BEFORE_SLEEP" />
+              <el-option label="半夜" value="MIDNIGHT" />
+              <el-option label="其他" value="OTHER" />
             </el-select>
           </div>
         </div>
@@ -135,6 +137,12 @@
         <el-table-column prop="measurement_time" label="测量类型" width="120">
           <template #default="scope">
             {{ getMeasurementTimeText(scope.row.measurement_time) }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="measurement_method" label="测量方法" width="120">
+          <template #default="scope">
+            {{ getMeasurementMethodText(scope.row.measurement_method) }}
           </template>
         </el-table-column>
         
@@ -194,12 +202,12 @@ const submitting = ref(false);
 const filterType = ref("");
 
 // 血糖记录表单
-const glucoseForm = reactive({
+const glucoseForm = reactive<GlucoseRecord>({
   id: "",
   value: 5.6,
   measured_at: new Date(),
-  measurement_time: "before_breakfast",
-  measurement_method: "finger_stick",
+  measurement_time: "BEFORE_BREAKFAST",
+  measurement_method: "FINGER_STICK",
   notes: "",
   user_id: "",
 });
@@ -300,19 +308,19 @@ const resetForm = () => {
   glucoseForm.id = "";
   glucoseForm.value = 5.6;
   glucoseForm.measured_at = new Date();
-  glucoseForm.measurement_time = "before_breakfast";
-  glucoseForm.measurement_method = "finger_stick";
+  glucoseForm.measurement_time = "BEFORE_BREAKFAST";
+  glucoseForm.measurement_method = "FINGER_STICK";
   glucoseForm.notes = "";
 };
 
 // 编辑记录
-const editRecord = (record) => {
+const editRecord = (record: GlucoseRecord) => {
   glucoseForm.id = record.id;
   glucoseForm.value = record.value;
   glucoseForm.measured_at = dayjs(record.measured_at).toDate();
   glucoseForm.measurement_time = record.measurement_time;
   glucoseForm.measurement_method = record.measurement_method;
-  glucoseForm.notes = record.notes;
+  glucoseForm.notes = record.notes || '';
   
   // 滚动到表单
   document
@@ -352,18 +360,49 @@ const formatDateTime = (dateStr) => {
 
 // 获取测量类型文本
 const getMeasurementTimeText = (type) => {
+  // 先转换为小写以确保匹配
+  const typeKey = type.toLowerCase();
+  
   const typeMap = {
-    before_breakfast: "早餐前",
-    after_breakfast: "早餐后",
-    before_lunch: "午餐前",
-    after_lunch: "午餐后",
-    before_dinner: "晚餐前",
-    after_dinner: "晚餐后",
-    before_sleep: "睡前",
-    midnight: "半夜",
-    other: "其他",
+    'before_breakfast': "早餐前",
+    'after_breakfast': "早餐后",
+    'before_lunch': "午餐前",
+    'after_lunch': "午餐后",
+    'before_dinner': "晚餐前",
+    'after_dinner': "晚餐后",
+    'before_sleep': "睡前",
+    'midnight': "半夜",
+    'other': "其他"
   };
+  
+  // 尝试匹配小写形式
+  if (typeMap[typeKey]) {
+    return typeMap[typeKey];
+  }
+  
+  // 尝试直接匹配（兼容旧数据）
   return typeMap[type] || type;
+};
+
+// 获取测量方法文本
+const getMeasurementMethodText = (method) => {
+  // 先转换为小写以确保匹配
+  const methodKey = method.toLowerCase();
+  
+  const methodMap = {
+    'finger_stick': "指尖采血",
+    'continuous_monitor': "连续监测",
+    'lab_test': "实验室检验",
+    'other': "其他"
+  };
+  
+  // 尝试匹配小写形式
+  if (methodMap[methodKey]) {
+    return methodMap[methodKey];
+  }
+  
+  // 尝试直接匹配（兼容旧数据）
+  return methodMap[method] || method;
 };
 
 // 获取血糖值对应的CSS类

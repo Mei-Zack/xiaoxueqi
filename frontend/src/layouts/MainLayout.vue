@@ -42,6 +42,11 @@
             <template #title>知识库</template>
           </el-menu-item>
           
+          <el-menu-item index="/devices">
+            <el-icon><Monitor /></el-icon>
+            <template #title>设备管理</template>
+          </el-menu-item>
+          
           <el-menu-item index="/settings">
             <el-icon><Setting /></el-icon>
             <template #title>设置</template>
@@ -121,7 +126,8 @@ import {
   Fold,
   CaretBottom,
   SwitchButton,
-  User
+  User,
+  Monitor
 } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
@@ -145,6 +151,7 @@ const pageMap = {
   '/health': '健康数据',
   '/assistant': '智能助理',
   '/knowledge': '知识库',
+  '/devices': '设备管理',
   '/settings': '设置',
   '/profile': '个人信息'
 }

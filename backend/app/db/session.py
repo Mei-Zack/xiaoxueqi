@@ -39,6 +39,7 @@ def get_db():
     try:
         yield db
     except Exception as e:
+        db.rollback()  # 发生错误时回滚
         logger.error(f"数据库会话错误: {str(e)}")
         raise
     finally:

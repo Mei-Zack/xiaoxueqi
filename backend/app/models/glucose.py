@@ -5,22 +5,22 @@ from enum import Enum
 
 
 class MeasurementTimeEnum(str, Enum):
-    BEFORE_BREAKFAST = "before_breakfast"
-    AFTER_BREAKFAST = "after_breakfast"
-    BEFORE_LUNCH = "before_lunch"
-    AFTER_LUNCH = "after_lunch"
-    BEFORE_DINNER = "before_dinner"
-    AFTER_DINNER = "after_dinner"
-    BEFORE_SLEEP = "before_sleep"
-    MIDNIGHT = "midnight"
-    OTHER = "other"
+    BEFORE_BREAKFAST = "BEFORE_BREAKFAST"
+    AFTER_BREAKFAST = "AFTER_BREAKFAST"
+    BEFORE_LUNCH = "BEFORE_LUNCH"
+    AFTER_LUNCH = "AFTER_LUNCH"
+    BEFORE_DINNER = "BEFORE_DINNER"
+    AFTER_DINNER = "AFTER_DINNER"
+    BEFORE_SLEEP = "BEFORE_SLEEP"
+    MIDNIGHT = "MIDNIGHT"
+    OTHER = "OTHER"
 
 
 class MeasurementMethodEnum(str, Enum):
-    FINGER_STICK = "finger_stick"
-    CONTINUOUS_MONITOR = "continuous_monitor"
-    LAB_TEST = "lab_test"
-    OTHER = "other"
+    FINGER_STICK = "FINGER_STICK"
+    CONTINUOUS_MONITOR = "CONTINUOUS_MONITOR"
+    LAB_TEST = "LAB_TEST"
+    OTHER = "OTHER"
 
 
 class GlucoseBase(BaseModel):
