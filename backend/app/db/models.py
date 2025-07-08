@@ -214,4 +214,20 @@ class KnowledgeBase(Base):
     source = Column(String(255), nullable=True)
     tags = Column(JSON, nullable=False, default=[])
     created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now()) 
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+
+class FoodNutrition(Base):
+    __tablename__ = "food_nutrition"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name_cn = Column(Text, nullable=False)
+    calories = Column(Integer, nullable=False)
+    protein = Column(Float, nullable=False)
+    fat = Column(Float, nullable=False)
+    carbs = Column(Float, nullable=False)
+    gi = Column(Integer, nullable=True)
+    category = Column(Text, nullable=False)
+    diabetes_index = Column(Float, nullable=True)
+    diabetes_friendly = Column(Integer, nullable=True)
+    image_url = Column(Text, nullable=True) 

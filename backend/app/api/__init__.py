@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.endpoints import users, health, glucose, diet, assistant, knowledge, ollama, glucose_monitor
+from app.api.endpoints import users, health, glucose, diet, assistant, knowledge, ollama, glucose_monitor, nutrition
 
 router = APIRouter()
 
@@ -10,4 +10,5 @@ router.include_router(diet.router, prefix="/diet", tags=["饮食记录"])
 router.include_router(assistant.router, prefix="/assistant", tags=["智能助手"])
 router.include_router(knowledge.router, prefix="/knowledge", tags=["知识库"])
 router.include_router(ollama.router, prefix="/ollama", tags=["Ollama大模型"])
-router.include_router(glucose_monitor.router, prefix="/glucose-monitor", tags=["血糖监测"]) 
+router.include_router(glucose_monitor.router, prefix="/glucose-monitor", tags=["血糖监测"])
+router.include_router(nutrition.router, prefix="/nutrition", tags=["食物营养"]) 

@@ -701,6 +701,224 @@ file: [图片文件]
 }
 ```
 
+### 8. 食物营养数据 `/api/v1/nutrition`
+
+#### 8.1 创建食物营养记录 `POST /`
+
+**请求体**：
+
+```json
+{
+  "name_cn": "全麦面包", // 必填，食物中文名称
+  "calories": 265, // 必填，卡路里(kcal)
+  "protein": 11.0, // 必填，蛋白质(g)
+  "fat": 3.5, // 必填，脂肪(g)
+  "carbs": 48.0, // 必填，碳水化合物(g)
+  "gi": 50, // 可选，血糖指数
+  "category": "谷物类", // 必填，食物分类
+  "diabetes_index": 2.5, // 可选，糖尿病指数
+  "diabetes_friendly": 1, // 可选，是否适合糖尿病患者(1是，0否)
+  "image_url": "https://example.com/foods/whole-wheat-bread.jpg" // 可选，食物图片URL或SVG数据
+}
+```
+
+**响应**：返回创建的食物营养记录，包含ID。
+
+#### 8.2 获取食物营养记录列表 `GET /`
+
+**查询参数**：
+
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+- `category`: 食物分类，可选
+- `diabetes_friendly`: 是否适合糖尿病患者(1是，0否)，可选
+- `search`: 食物名称搜索关键词，可选
+- `sort_by`: 排序字段，可选值为`calories`、`protein`、`fat`、`carbs`、`gi`，默认不排序
+- `sort_order`: 排序方向，可选值为`asc`、`desc`，默认`asc`
+
+**响应**：返回分页的食物营养记录列表。
+
+#### 8.3 获取单个食物营养记录 `GET /{food_id}`
+
+**路径参数**：
+
+- `food_id`: 食物记录ID
+
+**响应**：返回指定ID的食物营养记录详情。
+
+#### 8.4 更新食物营养记录 `PUT /{food_id}`
+
+**路径参数**：
+
+- `food_id`: 食物记录ID
+
+**请求体**：与创建食物营养记录相同，所有字段均为可选。
+
+**响应**：返回更新后的食物营养记录。
+
+#### 8.5 删除食物营养记录 `DELETE /{food_id}`
+
+**路径参数**：
+
+- `food_id`: 食物记录ID
+
+**响应**：
+
+```json
+{
+  "message": "食物营养记录已删除",
+  "status": "success"
+}
+```
+
+#### 8.6 批量导入食物营养数据 `POST /import`
+
+**请求体**：
+
+```json
+{
+  "items": [
+    {
+      "name_cn": "全麦面包",
+      "calories": 265,
+      "protein": 11.0,
+      "fat": 3.5,
+      "carbs": 48.0,
+      "gi": 50,
+      "category": "谷物类",
+      "diabetes_index": 2.5,
+      "diabetes_friendly": 1,
+      "image_url": "https://example.com/foods/whole-wheat-bread.jpg"
+    },
+    // 更多食物记录...
+  ]
+}
+```
+
+**响应**：
+
+```json
+{
+  "imported_count": 10,
+  "failed_count": 0,
+  "message": "食物营养数据导入成功",
+  "status": "success"
+}
+```
+
+#### 8.7 按分类获取食物列表 `GET /categories/{category}`
+
+**路径参数**：
+
+- `category`: 食物分类名称
+
+**查询参数**：
+
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+
+**响应**：返回指定分类的食物营养记录分页列表。
+
+#### 8.8 获取所有食物分类 `GET /categories`
+
+**响应**：
+
+```json
+{
+  "categories": [
+    "谷物类",
+    "蔬菜类",
+    "水果类",
+    "肉蛋类",
+    "豆制品",
+    "坚果类",
+    "油脂类",
+    "饮料类",
+    "调味品"
+  ]
+}
+```
+
+#### 8.9 获取适合糖尿病患者的食物 `GET /diabetes-friendly`
+
+**查询参数**：
+
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+- `category`: 食物分类，可选
+
+**响应**：返回适合糖尿病患者的食物营养记录分页列表。
+
+#### 8.10 获取低GI食物 `GET /low-gi`
+
+**查询参数**：
+
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+- `threshold`: GI阈值，默认55
+
+**响应**：返回GI值低于指定阈值的食物营养记录分页列表。
+
+#### 8.11 根据血糖指数范围查询食物 `GET /gi-range`
+
+**查询参数**：
+
+- `min`: 最小GI值，默认0
+- `max`: 最大GI值，默认100
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+
+**响应**：返回GI值在指定范围内的食物营养记录分页列表。
+
+#### 8.12 搜索食物 `GET /search`
+
+**查询参数**：
+
+- `q`: 搜索关键词，必填
+- `page`: 页码，默认1
+- `size`: 每页大小，默认20
+
+**响应**：返回匹配搜索关键词的食物营养记录分页列表。
+
+#### 8.13 上传食物图片 `POST /{food_id}/image`
+
+**路径参数**：
+
+- `food_id`: 食物记录ID
+
+**请求体**：
+
+```
+Content-Type: multipart/form-data
+file: [图片文件]
+```
+
+**响应**：
+
+```json
+{
+  "file_path": "/uploads/foods/food_123.jpg",
+  "file_size": 1024,
+  "message": "食物图片上传成功",
+  "status": "success"
+}
+```
+
+#### 8.14 删除食物图片 `DELETE /{food_id}/image`
+
+**路径参数**：
+
+- `food_id`: 食物记录ID
+
+**响应**：
+
+```json
+{
+  "message": "食物图片已删除",
+  "status": "success"
+}
+```
+
 ## 错误码说明
 
 | 状态码 | 说明 |
