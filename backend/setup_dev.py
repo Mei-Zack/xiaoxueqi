@@ -5,6 +5,19 @@
 1. 初始化数据库
 2. 创建超级管理员
 3. 添加示例数据（可选）
+
+使用方法:
+- 初始化数据库（使用SQL文件创建所有表）: python setup_dev.py --init-db
+- 初始化数据库（使用ORM模型创建表）: python setup_dev.py --init-db --use-orm
+- 重置数据库（删除所有表并重新创建）: python setup_dev.py --reset
+- 创建示例数据: python setup_dev.py --sample-data
+
+注意:
+- 默认使用diabetes_assistant.sql文件创建表结构，确保该文件位于backend目录下
+- 使用--use-orm参数可以使用SQLAlchemy ORM模型创建表，但可能与SQL文件定义的表结构有差异
+- 初始化后会创建两个账号：
+  * 管理员: admin@example.com / admin123
+  * 测试用户: test@example.com / admin123
 """
 
 import os
@@ -13,18 +26,76 @@ import logging
 import argparse
 from datetime import datetime, timedelta
 import random
+import sqlalchemy
 
 # 确保能够导入app包
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app.db.init_db import init_db, reset_db
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, engine
 from app.models.user import UserCreate
 from app.services.user import create_superuser, get_user_by_email
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def create_tables_from_sql():
+    """从SQL文件创建所有表"""
+    try:
+        # 获取SQL文件路径
+        sql_file_path = os.path.join(os.path.dirname(__file__), "diabetes_assistant.sql")
+        
+        if not os.path.exists(sql_file_path):
+            logger.warning(f"SQL文件不存在: {sql_file_path}")
+            return False
+        
+        # 读取SQL文件内容
+        with open(sql_file_path, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+        
+        # 分割SQL语句
+        sql_statements = []
+        current_statement = []
+        
+        for line in sql_content.split('\n'):
+            # 跳过注释和空行
+            if line.strip().startswith('--') or line.strip() == '' or line.strip().startswith('/*') or line.strip().startswith('*/'):
+                continue
+                
+            # 添加到当前语句
+            current_statement.append(line)
+            
+            # 如果行以分号结束，则完成一个语句
+            if line.strip().endswith(';'):
+                sql_statements.append('\n'.join(current_statement))
+                current_statement = []
+        
+        # 执行SQL语句
+        with engine.begin() as conn:
+            # 设置外键检查为0
+            conn.execute(sqlalchemy.text("SET FOREIGN_KEY_CHECKS = 0;"))
+            
+            for statement in sql_statements:
+                if statement.strip():
+                    # 只执行创建表的语句
+                    if "CREATE TABLE" in statement:
+                        try:
+                            conn.execute(sqlalchemy.text(statement))
+                            logger.info(f"已执行: {statement[:50]}...")
+                        except Exception as e:
+                            logger.error(f"执行SQL语句失败: {str(e)}")
+            
+            # 恢复外键检查
+            conn.execute(sqlalchemy.text("SET FOREIGN_KEY_CHECKS = 1;"))
+        
+        logger.info("从SQL文件创建表完成")
+        return True
+    
+    except Exception as e:
+        logger.error(f"从SQL文件创建表失败: {str(e)}")
+        return False
 
 
 def create_admin_user(db):
@@ -159,6 +230,7 @@ def main():
     parser.add_argument("--reset", action="store_true", help="重置数据库（删除所有表并重新创建）")
     parser.add_argument("--sample-data", action="store_true", help="创建示例数据")
     parser.add_argument("--init-db", action="store_true", help="初始化数据库")
+    parser.add_argument("--use-orm", action="store_true", help="使用ORM模型创建表结构（默认使用SQL文件）")
     args = parser.parse_args()
     
     try:
@@ -167,7 +239,12 @@ def main():
             reset_db()
         elif args.init_db or not args.sample_data:
             logger.info("正在初始化数据库...")
-            init_db()
+            if args.use_orm:
+                logger.info("使用ORM模型创建表结构...")
+                init_db()
+            else:
+                logger.info("使用SQL文件创建表结构...")
+                create_tables_from_sql()
         
         db = SessionLocal()
         try:
