@@ -1,0 +1,1447 @@
+[
+  {
+    "measured_at": "2025-07-06T10:49:09.988983",
+    "value": 5.4,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T11:04:09.988983",
+    "value": 6.3,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T11:19:09.988983",
+    "value": 5.8,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T11:34:09.988983",
+    "value": 5.2,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T11:49:09.988983",
+    "value": 10.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-06T12:04:09.988983",
+    "value": 9.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T12:19:09.988983",
+    "value": 10.9,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T12:34:09.988983",
+    "value": 12.6,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T12:49:09.988983",
+    "value": 9.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T13:04:09.988983",
+    "value": 12.4,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T13:19:09.988983",
+    "value": 12.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T13:34:09.988983",
+    "value": 10.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T13:49:09.988983",
+    "value": 9.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T14:04:09.988983",
+    "value": 7.4,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T14:19:09.988983",
+    "value": 5.1,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T14:34:09.988983",
+    "value": 6.6,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T14:49:09.988983",
+    "value": 8.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T15:04:09.988983",
+    "value": 9.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T15:19:09.988983",
+    "value": 5.5,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T15:34:09.988983",
+    "value": 8.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T15:49:09.988983",
+    "value": 7.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-06T16:04:09.988983",
+    "value": 10.5,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T16:19:09.988983",
+    "value": 4.6,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T16:34:09.988983",
+    "value": 9.3,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T16:49:09.988983",
+    "value": 7.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T17:04:09.988983",
+    "value": 10.9,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T17:19:09.988983",
+    "value": 8.6,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T17:34:09.988983",
+    "value": 7.6,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-06T17:49:09.988983",
+    "value": 8.7,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T18:04:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T18:19:09.988983",
+    "value": 10.5,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T18:34:09.988983",
+    "value": 9.1,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T18:49:09.988983",
+    "value": 12.7,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T19:04:09.988983",
+    "value": 6.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T19:19:09.988983",
+    "value": 7.1,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T19:34:09.988983",
+    "value": 12.3,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T19:49:09.988983",
+    "value": 9.8,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T20:04:09.988983",
+    "value": 7.8,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T20:19:09.988983",
+    "value": 10.5,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-06T20:34:09.988983",
+    "value": 7.4,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-06T20:49:09.988983",
+    "value": 8.3,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T21:04:09.988983",
+    "value": 8.9,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T21:19:09.988983",
+    "value": 7.6,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-06T21:34:09.988983",
+    "value": 6.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-06T21:49:09.988983",
+    "value": 10.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-06T22:04:09.988983",
+    "value": 6.8,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T22:19:09.988983",
+    "value": 9.3,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T22:34:09.988983",
+    "value": 10.6,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T22:49:09.988983",
+    "value": 8.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T23:04:09.988983",
+    "value": 5.9,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T23:19:09.988983",
+    "value": 4.9,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T23:34:09.988983",
+    "value": 8.1,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-06T23:49:09.988983",
+    "value": 8.5,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T00:04:09.988983",
+    "value": 9.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T00:19:09.988983",
+    "value": 5.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T00:34:09.988983",
+    "value": 7.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T00:49:09.988983",
+    "value": 12.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T01:04:09.988983",
+    "value": 6.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T01:19:09.988983",
+    "value": 9.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T01:34:09.988983",
+    "value": 8.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T01:49:09.988983",
+    "value": 6.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T02:04:09.988983",
+    "value": 8.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T02:19:09.988983",
+    "value": 5.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T02:34:09.988983",
+    "value": 9.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T02:49:09.988983",
+    "value": 7.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T03:04:09.988983",
+    "value": 5.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T03:19:09.988983",
+    "value": 5.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T03:34:09.988983",
+    "value": 7.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T03:49:09.988983",
+    "value": 4.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T04:04:09.988983",
+    "value": 8.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T04:19:09.988983",
+    "value": 4.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T04:34:09.988983",
+    "value": 9.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T04:49:09.988983",
+    "value": 5.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T05:04:09.988983",
+    "value": 14.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T05:19:09.988983",
+    "value": 6.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T05:34:09.988983",
+    "value": 7.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T05:49:09.988983",
+    "value": 8.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T06:04:09.988983",
+    "value": 8.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T06:19:09.988983",
+    "value": 7.0,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T06:34:09.988983",
+    "value": 9.1,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T06:49:09.988983",
+    "value": 10.1,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T07:04:09.988983",
+    "value": 8.0,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T07:19:09.988983",
+    "value": 10.3,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T07:34:09.988983",
+    "value": 13.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T07:49:09.988983",
+    "value": 8.3,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T08:04:09.988983",
+    "value": 4.5,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T08:19:09.988983",
+    "value": 13.7,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T08:34:09.988983",
+    "value": 7.6,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T08:49:09.988983",
+    "value": 12.1,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T09:04:09.988983",
+    "value": 9.8,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T09:19:09.988983",
+    "value": 12.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T09:34:09.988983",
+    "value": 10.9,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T09:49:09.988983",
+    "value": 5.7,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T10:04:09.988983",
+    "value": 6.8,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T10:19:09.988983",
+    "value": 6.8,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T10:34:09.988983",
+    "value": 4.6,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T10:49:09.988983",
+    "value": 8.0,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T11:04:09.988983",
+    "value": 6.5,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T11:19:09.988983",
+    "value": 13.7,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T11:34:09.988983",
+    "value": 10.2,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T11:49:09.988983",
+    "value": 6.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T12:04:09.988983",
+    "value": 8.2,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T12:19:09.988983",
+    "value": 9.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T12:34:09.988983",
+    "value": 12.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T12:49:09.988983",
+    "value": 5.2,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T13:04:09.988983",
+    "value": 8.2,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T13:19:09.988983",
+    "value": 12.5,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T13:34:09.988983",
+    "value": 6.8,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T13:49:09.988983",
+    "value": 8.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T14:04:09.988983",
+    "value": 9.4,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T14:19:09.988983",
+    "value": 9.0,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T14:34:09.988983",
+    "value": 8.3,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T14:49:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T15:04:09.988983",
+    "value": 4.9,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T15:19:09.988983",
+    "value": 5.2,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T15:34:09.988983",
+    "value": 8.1,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T15:49:09.988983",
+    "value": 8.3,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T16:04:09.988983",
+    "value": 5.2,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T16:19:09.988983",
+    "value": 10.0,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T16:34:09.988983",
+    "value": 8.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T16:49:09.988983",
+    "value": 7.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T17:04:09.988983",
+    "value": 5.8,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T17:19:09.988983",
+    "value": 8.9,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T17:34:09.988983",
+    "value": 5.6,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-07T17:49:09.988983",
+    "value": 7.7,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T18:04:09.988983",
+    "value": 6.9,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T18:19:09.988983",
+    "value": 6.7,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T18:34:09.988983",
+    "value": 9.0,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T18:49:09.988983",
+    "value": 5.0,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T19:04:09.988983",
+    "value": 10.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T19:19:09.988983",
+    "value": 12.3,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T19:34:09.988983",
+    "value": 6.2,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T19:49:09.988983",
+    "value": 11.9,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T20:04:09.988983",
+    "value": 4.6,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-07T20:19:09.988983",
+    "value": 7.3,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-07T20:34:09.988983",
+    "value": 5.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T20:49:09.988983",
+    "value": 6.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-07T21:04:09.988983",
+    "value": 5.1,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T21:19:09.988983",
+    "value": 10.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T21:34:09.988983",
+    "value": 7.9,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T21:49:09.988983",
+    "value": 7.4,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-07T22:04:09.988983",
+    "value": 5.4,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T22:19:09.988983",
+    "value": 6.6,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T22:34:09.988983",
+    "value": 12.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T22:49:09.988983",
+    "value": 5.3,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T23:04:09.988983",
+    "value": 4.5,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T23:19:09.988983",
+    "value": 5.4,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T23:34:09.988983",
+    "value": 9.1,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-07T23:49:09.988983",
+    "value": 4.5,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T00:04:09.988983",
+    "value": 9.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T00:19:09.988983",
+    "value": 8.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T00:34:09.988983",
+    "value": 10.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T00:49:09.988983",
+    "value": 8.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T01:04:09.988983",
+    "value": 9.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T01:19:09.988983",
+    "value": 5.2,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T01:34:09.988983",
+    "value": 12.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T01:49:09.988983",
+    "value": 6.2,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T02:04:09.988983",
+    "value": 9.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T02:19:09.988983",
+    "value": 6.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T02:34:09.988983",
+    "value": 10.2,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T02:49:09.988983",
+    "value": 4.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T03:04:09.988983",
+    "value": 5.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T03:19:09.988983",
+    "value": 9.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T03:34:09.988983",
+    "value": 6.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T03:49:09.988983",
+    "value": 7.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T04:04:09.988983",
+    "value": 7.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T04:19:09.988983",
+    "value": 9.7,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T04:34:09.988983",
+    "value": 9.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T04:49:09.988983",
+    "value": 5.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T05:04:09.988983",
+    "value": 6.1,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T05:19:09.988983",
+    "value": 12.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T05:34:09.988983",
+    "value": 9.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T05:49:09.988983",
+    "value": 4.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-08T06:04:09.988983",
+    "value": 10.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T06:19:09.988983",
+    "value": 8.4,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T06:34:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T06:49:09.988983",
+    "value": 5.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T07:04:09.988983",
+    "value": 9.2,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T07:19:09.988983",
+    "value": 6.2,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T07:34:09.988983",
+    "value": 5.4,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T07:49:09.988983",
+    "value": 8.5,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T08:04:09.988983",
+    "value": 10.9,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T08:19:09.988983",
+    "value": 9.9,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T08:34:09.988983",
+    "value": 8.1,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T08:49:09.988983",
+    "value": 10.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T09:04:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T09:19:09.988983",
+    "value": 8.6,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T09:34:09.988983",
+    "value": 7.8,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T09:49:09.988983",
+    "value": 10.9,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T10:04:09.988983",
+    "value": 4.9,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T10:19:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T10:34:09.988983",
+    "value": 8.7,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T10:49:09.988983",
+    "value": 6.5,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T11:04:09.988983",
+    "value": 8.4,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T11:19:09.988983",
+    "value": 10.7,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T11:34:09.988983",
+    "value": 10.0,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-08T11:49:09.988983",
+    "value": 13.6,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T12:04:09.988983",
+    "value": 7.7,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T12:19:09.988983",
+    "value": 10.2,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T12:34:09.988983",
+    "value": 12.1,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T12:49:09.988983",
+    "value": 13.9,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T13:04:09.988983",
+    "value": 11.9,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T13:19:09.988983",
+    "value": 12.3,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T13:34:09.988983",
+    "value": 7.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T13:49:09.988983",
+    "value": 11.9,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T14:04:09.988983",
+    "value": 5.1,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T14:19:09.988983",
+    "value": 5.2,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T14:34:09.988983",
+    "value": 5.3,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T14:49:09.988983",
+    "value": 7.8,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T15:04:09.988983",
+    "value": 4.7,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T15:19:09.988983",
+    "value": 5.0,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T15:34:09.988983",
+    "value": 8.2,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T15:49:09.988983",
+    "value": 7.9,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T16:04:09.988983",
+    "value": 9.0,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T16:19:09.988983",
+    "value": 7.5,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T16:34:09.988983",
+    "value": 13.9,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T16:49:09.988983",
+    "value": 13.5,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T17:04:09.988983",
+    "value": 9.8,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-08T17:19:09.988983",
+    "value": 4.9,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-08T17:34:09.988983",
+    "value": 12.7,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T17:49:09.988983",
+    "value": 5.4,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T18:04:09.988983",
+    "value": 8.3,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T18:19:09.988983",
+    "value": 4.7,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T18:34:09.988983",
+    "value": 5.5,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T18:49:09.988983",
+    "value": 11.8,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T19:04:09.988983",
+    "value": 12.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T19:19:09.988983",
+    "value": 10.4,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T19:34:09.988983",
+    "value": 11.7,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T19:49:09.988983",
+    "value": 8.2,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T20:04:09.988983",
+    "value": 10.0,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T20:19:09.988983",
+    "value": 4.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-08T20:34:09.988983",
+    "value": 12.3,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T20:49:09.988983",
+    "value": 12.6,
+    "measurement_time": "AFTER_DINNER"
+  },
+  {
+    "measured_at": "2025-07-08T21:04:09.988983",
+    "value": 9.6,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T21:19:09.988983",
+    "value": 10.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T21:34:09.988983",
+    "value": 5.8,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-08T21:49:09.988983",
+    "value": 5.4,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-08T22:04:09.988983",
+    "value": 6.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T22:19:09.988983",
+    "value": 13.2,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T22:34:09.988983",
+    "value": 7.9,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T22:49:09.988983",
+    "value": 8.5,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T23:04:09.988983",
+    "value": 6.4,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T23:19:09.988983",
+    "value": 8.6,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T23:34:09.988983",
+    "value": 4.8,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-08T23:49:09.988983",
+    "value": 10.7,
+    "measurement_time": "BEDTIME"
+  },
+  {
+    "measured_at": "2025-07-09T00:04:09.988983",
+    "value": 8.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T00:19:09.988983",
+    "value": 9.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T00:34:09.988983",
+    "value": 8.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T00:49:09.988983",
+    "value": 5.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T01:04:09.988983",
+    "value": 10.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T01:19:09.988983",
+    "value": 8.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T01:34:09.988983",
+    "value": 11.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T01:49:09.988983",
+    "value": 9.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T02:04:09.988983",
+    "value": 6.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T02:19:09.988983",
+    "value": 8.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T02:34:09.988983",
+    "value": 10.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T02:49:09.988983",
+    "value": 5.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T03:04:09.988983",
+    "value": 7.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T03:19:09.988983",
+    "value": 7.3,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T03:34:09.988983",
+    "value": 4.8,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T03:49:09.988983",
+    "value": 7.4,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T04:04:09.988983",
+    "value": 5.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T04:19:09.988983",
+    "value": 7.2,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T04:34:09.988983",
+    "value": 4.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T04:49:09.988983",
+    "value": 5.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T05:04:09.988983",
+    "value": 7.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T05:19:09.988983",
+    "value": 4.6,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T05:34:09.988983",
+    "value": 8.2,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T05:49:09.988983",
+    "value": 5.9,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T06:04:09.988983",
+    "value": 5.5,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-09T06:19:09.988983",
+    "value": 7.5,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-09T06:34:09.988983",
+    "value": 8.4,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-09T06:49:09.988983",
+    "value": 10.8,
+    "measurement_time": "BEFORE_DINNER"
+  },
+  {
+    "measured_at": "2025-07-09T07:04:09.988983",
+    "value": 10.0,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T07:19:09.988983",
+    "value": 7.5,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T07:34:09.988983",
+    "value": 9.6,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T07:49:09.988983",
+    "value": 7.7,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T08:04:09.988983",
+    "value": 10.9,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T08:19:09.988983",
+    "value": 6.1,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T08:34:09.988983",
+    "value": 10.0,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T08:49:09.988983",
+    "value": 7.3,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T09:04:09.988983",
+    "value": 10.7,
+    "measurement_time": "AFTER_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-09T09:19:09.988983",
+    "value": 9.8,
+    "measurement_time": "AFTER_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T09:34:09.988983",
+    "value": 9.9,
+    "measurement_time": "BEFORE_BREAKFAST"
+  },
+  {
+    "measured_at": "2025-07-09T09:49:09.988983",
+    "value": 4.5,
+    "measurement_time": "BEFORE_LUNCH"
+  },
+  {
+    "measured_at": "2025-07-09T10:04:09.988983",
+    "value": 10.5,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T10:19:09.988983",
+    "value": 5.0,
+    "measurement_time": "NIGHT"
+  },
+  {
+    "measured_at": "2025-07-09T10:34:09.988983",
+    "value": 4.8,
+    "measurement_time": "FASTING"
+  },
+  {
+    "measured_at": "2025-07-09T10:49:09.988983",
+    "value": 8.2,
+    "measurement_time": "AFTER_LUNCH"
+  }
+]

@@ -1038,28 +1038,37 @@ const updateGlucoseChart = () => {
       yAxis: {
         type: 'value',
         name: '血糖 (mmol/L)',
-        min: 3.5,
-        max: 10.5,
-        interval: 1,
-        axisLine: { lineStyle: { color: '#666' } }
+        min: 3, // 调整范围以获得更好的视觉效果
+        max: 12,
+        interval: 1.5,
+        axisLine: { lineStyle: { color: '#aaa' } },
+        splitLine: {
+          lineStyle: {
+            color: '#eee'
+          }
+        }
       },
       series: [
         {
           name: '空腹血糖',
           type: 'line',
+          smooth: true, // 使线条更平滑
           data: fastingData,
           connectNulls: true,
           symbol: 'circle',
-          symbolSize: 6,
+          symbolSize: 8, // 稍大的标记点
           itemStyle: {
-            color: '#409eff'
+            color: '#3498db' // 活力蓝
           },
           lineStyle: {
-            width: 2
+            width: 3,
+            shadowColor: 'rgba(52, 152, 219, 0.5)',
+            shadowBlur: 10,
+            shadowOffsetY: 5
           },
           markArea: {
             itemStyle: {
-              color: 'rgba(103, 194, 58, 0.1)'
+              color: 'rgba(46, 204, 113, 0.1)' // 清新绿
             },
             data: [
               [{
@@ -1073,19 +1082,23 @@ const updateGlucoseChart = () => {
         {
           name: '餐后血糖',
           type: 'line',
+          smooth: true, // 使线条更平滑
           data: afterMealData,
           connectNulls: true,
           symbol: 'circle',
-          symbolSize: 6,
+          symbolSize: 8,
           itemStyle: {
-            color: '#ff9f43'
+            color: '#e67e22' // 活力橙
           },
           lineStyle: {
-            width: 2
+            width: 3,
+            shadowColor: 'rgba(230, 126, 34, 0.5)',
+            shadowBlur: 10,
+            shadowOffsetY: 5
           },
           markArea: {
             itemStyle: {
-              color: 'rgba(103, 194, 58, 0.1)'
+              color: 'rgba(46, 204, 113, 0.1)' // 清新绿
             },
             data: [
               [{
@@ -1580,23 +1593,65 @@ const syncDevice = async () => {
 </script>
 
 <style scoped>
+/* 定义主题色变量 */
+:root {
+  --metric-color: #2ecc71; /* 绿色 */
+  --diet-suggestion-color: #e67e22; /* 橙色 */
+  --diet-record-color: #f1c40f; /* 黄色 */
+  --glucose-monitor-color: #3498db; /* 蓝色 */
+  --reminder-color: #9b59b6; /* 紫色 */
+  --knowledge-color: #34495e; /* 深蓝灰色 */
+}
+
 .dashboard-container {
-  padding: 20px;
+  padding: 24px;
+  background-color: #f0f4f8;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
 }
 
 .el-card {
-  margin-bottom: 20px;
-  border-radius: 8px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden; /* 配合圆角 */
+}
+
+.el-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  border-bottom: 1px solid #eef2f7;
+  padding-bottom: 10px;
 }
 
+/* 为特定卡片添加彩色左边框 */
+.metric-card { border-left: 5px solid var(--metric-color); }
+.diet-suggestion-card { border-left: 5px solid var(--diet-suggestion-color); }
+.diet-card { border-left: 5px solid var(--diet-record-color); }
+.glucose-card { border-left: 5px solid var(--glucose-monitor-color); }
+.reminder-card { border-left: 5px solid var(--reminder-color); }
+.knowledge-card { border-left: 5px solid var(--knowledge-color); }
+
+/* 为卡片头部的文字或图标应用主题色 */
+.metric-card .card-header span { color: var(--metric-color); }
+.diet-suggestion-card .card-header span { color: var(--diet-suggestion-color); }
+.diet-card .card-header span { color: var(--diet-record-color); }
+.glucose-card .card-header span { color: var(--glucose-monitor-color); }
+.reminder-card .card-header span { color: var(--reminder-color); }
+.knowledge-card .card-header span { color: var(--knowledge-color); }
+
 .welcome-card {
-  background: linear-gradient(135deg, #409eff, #67c23a);
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
   color: white;
 }
 
@@ -1604,70 +1659,96 @@ const syncDevice = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px;
 }
 
 .welcome-text h2 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .welcome-text p {
   margin: 8px 0 0;
-  opacity: 0.8;
+  opacity: 0.9;
+  font-size: 1rem;
 }
 
 .welcome-actions {
   display: flex;
-  gap: 10px;
+  gap: 15px;
+}
+
+.welcome-actions .el-button--primary {
+  background-color: #ffffff !important;
+  color: #0072ff;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-actions .el-button {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.chart-card .card-header {
+  border-bottom: none;
 }
 
 .chart-container {
-  height: 300px;
+  height: 350px;
   width: 100%;
-  margin: 10px 0;
-  border: 1px solid #ebeef5;
+  margin: 0;
+  border: none;
   border-radius: 4px;
 }
 
 .chart {
   width: 100%;
   height: 100%;
-  min-height: 300px;
+  min-height: 350px;
 }
 
 .metrics-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
 .metric-item {
   text-align: center;
-  padding: 10px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
 }
 
 .metric-label {
-  color: var(--text-color-secondary);
+  color: #576b81;
   font-size: 0.9rem;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .metric-value {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--text-color);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--metric-color);
 }
 
-.diet-list {
-  margin-bottom: 10px;
+.diet-card .diet-list {
+  padding: 0 10px;
 }
 
 .diet-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 12px 0;
+  border-bottom: 1px solid #eef2f7;
 }
 
 .diet-item:last-child {
@@ -1676,38 +1757,44 @@ const syncDevice = async () => {
 
 .diet-time {
   font-size: 0.9rem;
-  color: var(--text-color-secondary);
+  color: #576b81;
   width: 30%;
+  font-weight: 500;
 }
 
 .diet-name {
   flex: 1;
+  font-weight: 500;
 }
 
 .diet-calories {
-  color: var(--text-color-secondary);
+  color: var(--diet-record-color);
+  font-weight: 600;
 }
 
 .reminder-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .reminder-item {
   display: flex;
   align-items: center;
-  padding: 8px 0;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  transition: background-color 0.3s;
 }
 
 .reminder-icon {
   margin-right: 12px;
-  font-size: 1.2rem;
-  color: var(--warning-color);
+  font-size: 1.4rem;
+  color: var(--reminder-color);
 }
 
 .reminder-icon.done {
-  color: var(--success-color);
+  color: #2ecc71;
 }
 
 .reminder-content {
@@ -1715,17 +1802,22 @@ const syncDevice = async () => {
 }
 
 .reminder-text {
-  font-weight: 500;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .reminder-time {
   font-size: 0.8rem;
-  color: var(--text-color-secondary);
+  color: #576b81;
+}
+
+.reminder-item .el-checkbox {
+  margin-left: 10px;
 }
 
 .knowledge-item {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+  border-bottom: 1px solid #eef2f7;
 }
 
 .knowledge-item:last-child {
@@ -1733,45 +1825,51 @@ const syncDevice = async () => {
 }
 
 .knowledge-title {
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #2c3e50;
 }
 
 .knowledge-desc {
   font-size: 0.9rem;
-  color: var(--text-color-secondary);
-  margin-bottom: 8px;
+  color: #576b81;
+  margin-bottom: 12px;
+}
+
+.knowledge-item .el-button {
+  font-weight: 600;
 }
 
 .card-footer {
-  margin-top: 12px;
+  margin-top: 16px;
   text-align: center;
 }
 
 .empty-data {
-  padding: 20px 0;
+  padding: 40px 0;
 }
 
 .loading-container {
-  padding: 20px 0;
+  padding: 20px;
 }
 
-.glucose-card {
-  margin-bottom: 20px;
+.glucose-card .card-header {
+  border-bottom: none;
 }
 
 .quick-import {
-  padding: 10px;
+  padding: 10px 5px;
 }
 
 .quick-import h4 {
-  margin-bottom: 10px;
-  color: #409eff;
-  font-weight: 500;
+  margin-bottom: 15px;
+  color: var(--glucose-monitor-color);
+  font-weight: 600;
 }
 
-.quick-import .el-form {
-  margin-bottom: 10px;
+.quick-import .el-button {
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .glucose-alerts {
@@ -1779,7 +1877,8 @@ const syncDevice = async () => {
 }
 
 .glucose-alerts .el-alert {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
 }
 
 .glucose-alerts .el-alert:last-child {
@@ -1792,64 +1891,67 @@ const syncDevice = async () => {
 }
 
 .analysis-summary {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   margin-bottom: 15px;
 }
 
 .summary-item {
   text-align: center;
   flex: 1;
-  padding: 8px 0;
-  border-radius: 4px;
+  padding: 12px 0;
+  border-radius: 12px;
 }
 
 .summary-value {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 
 .summary-label {
-  font-size: 12px;
-  color: #606266;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.normal-value { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
-.high-value { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
-.low-value { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+.normal-value { background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+.high-value { background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; }
+.low-value { background-color: rgba(243, 156, 18, 0.1); color: #f39c12; }
 
-.good-range { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
-.average-range { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
-.poor-range { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+.good-range { background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+.average-range { background-color: rgba(243, 156, 18, 0.1); color: #f39c12; }
+.poor-range { background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; }
 
-.stable-std { background-color: rgba(103, 194, 58, 0.1); color: #67c23a; }
-.moderate-std { background-color: rgba(230, 162, 60, 0.1); color: #e6a23c; }
-.unstable-std { background-color: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+.stable-std { background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+.moderate-std { background-color: rgba(243, 156, 18, 0.1); color: #f39c12; }
+.unstable-std { background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; }
 
 .advice-preview {
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  padding: 12px;
+  background-color: #eaf5ff;
+  border-radius: 12px;
+  padding: 16px;
   margin-bottom: 10px;
+  border: 1px solid #a8d8ff;
 }
 
 .advice-title {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
-  color: #409eff;
-  font-weight: 500;
+  color: var(--glucose-monitor-color);
+  font-weight: 600;
 }
 
 .advice-title .el-icon {
-  margin-right: 6px;
+  margin-right: 8px;
+  font-size: 1.2rem;
 }
 
 .advice-content {
-  font-size: 13px;
-  line-height: 1.5;
-  color: #606266;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #34495e;
   margin-bottom: 8px;
 }
 
@@ -1864,38 +1966,41 @@ const syncDevice = async () => {
   overflow-y: auto;
 }
 
-.diet-suggestion-card {
-  margin-bottom: 20px;
-  border-radius: 8px;
+.diet-suggestion-card .card-header {
+  border-bottom: none;
 }
 
 .diet-status-banner {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 10px;
   margin-bottom: 15px;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .diet-status-banner .el-icon {
   margin-right: 8px;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .status-normal {
-  background-color: rgba(103, 194, 58, 0.1);
-  color: #67c23a;
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+  border-left: 5px solid #2ecc71;
 }
 
 .status-high {
-  background-color: rgba(245, 108, 108, 0.1);
-  color: #f56c6c;
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #c0392b;
+  border-left: 5px solid #e74c3c;
 }
 
 .status-low {
-  background-color: rgba(230, 162, 60, 0.1);
-  color: #e6a23c;
+  background-color: rgba(243, 156, 18, 0.15);
+  color: #d35400;
+  border-left: 5px solid #f39c12;
 }
 
 .diet-suggestion-content {
@@ -1904,51 +2009,58 @@ const syncDevice = async () => {
 
 .suggestion-text {
   font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 15px;
-  color: #606266;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #34495e;
 }
 
 .food-section {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .food-section h4 {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #303133;
+  font-size: 15px;
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .food-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .food-tag {
-  margin-right: 0;
+  border-radius: 16px;
+  padding: 0 15px;
+  height: 32px;
+  line-height: 30px;
+  font-weight: 500;
 }
 
 .next-meal {
-  margin: 15px 0;
+  margin: 20px 0;
 }
 
 .meal-type-selector {
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   text-align: center;
 }
 
 .meal-suggestion {
-  background-color: #f5f7fa;
-  padding: 10px;
-  border-radius: 4px;
+  background-color: #f0f4f8;
+  padding: 15px;
+  border-radius: 10px;
   font-size: 14px;
-  line-height: 1.5;
-  color: #606266;
+  line-height: 1.6;
+  color: #34495e;
+  text-align: center;
+  border: 1px dashed #bdc3c7;
 }
 
 .card-footer {
-  margin-top: 15px;
+  margin-top: 20px;
   text-align: center;
 }
 
@@ -1960,21 +2072,45 @@ const syncDevice = async () => {
 :deep(.diet-suggestion-dialog ul) {
   padding-left: 20px;
   margin: 10px 0;
+  list-style-type: "✨ ";
 }
 
 :deep(.diet-suggestion-dialog h3, .diet-suggestion-dialog h4) {
   margin: 15px 0 10px 0;
+  color: #0072ff;
+}
+
+@media (max-width: 992px) {
+  .metrics-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px;
+  }
   .welcome-content {
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     text-align: center;
   }
   
-  .metrics-container {
+  .metrics-container, .analysis-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .metrics-container, .analysis-summary {
     grid-template-columns: 1fr;
+  }
+  .welcome-text h2 {
+    font-size: 1.8rem;
+  }
+  .welcome-actions {
+    flex-direction: column;
+    width: 100%;
   }
 }
 </style> 
