@@ -75,6 +75,8 @@ xiaoxueqi/
 
 # 首次部署指南
 
+[点击观看项目部署教学视频](https://www.bilibili.com/video/BV11332zDEc4/?share_source=copy_web&vd_source=515242b9b6a1c9254d045bc61a20d705)
+
 如何部署糖尿病智能健康助理系统。请按照以下步骤一步一步操作。
 
 ## 第一部分：准备工作
