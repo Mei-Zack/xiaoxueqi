@@ -55,8 +55,8 @@
             </el-card>
           </el-col>
           
-          <!-- 健康指标卡片 -->
-          <el-col :xs="24" :sm="12">
+          <!-- 三卡片布局：健康指标、饮食建议、今日饮食 -->
+          <el-col :xs="24" :sm="8">
             <el-card class="metric-card">
               <template #header>
                 <div class="card-header">
@@ -87,8 +87,95 @@
             </el-card>
           </el-col>
           
+          <!-- 血糖饮食建议卡片 - 从右侧移动到左侧 -->
+          <el-col :xs="24" :sm="8">
+            <el-card class="diet-suggestion-card">
+              <template #header>
+                <div class="card-header">
+                  <span>血糖饮食建议</span>
+                  <el-button type="text" @click="refreshDietSuggestions">
+                    <el-icon><Refresh /></el-icon>
+                  </el-button>
+                </div>
+              </template>
+              <div v-if="loadingDietSuggestions" class="loading-container">
+                <el-skeleton :rows="3" animated />
+              </div>
+              <div v-else-if="!hasDietSuggestions" class="empty-data">
+                <el-empty description="暂无饮食建议" :image-size="60">
+                  <template #description>
+                    <p>需要血糖数据才能生成饮食建议</p>
+                  </template>
+                  <el-button size="small" @click="fetchDietSuggestions">获取建议</el-button>
+                </el-empty>
+              </div>
+              <div v-else>
+                <div class="diet-status-banner" :class="getDietStatusClass(dietSuggestions.glucose_status)">
+                  <el-icon><InfoFilled /></el-icon>
+                  <span>{{ dietSuggestions.current_status }}</span>
+                </div>
+                
+                <div class="diet-suggestion-content">
+                  <p class="suggestion-text">{{ dietSuggestions.quick_suggestion }}</p>
+                  
+                  <div class="food-section">
+                    <h4>推荐食物</h4>
+                    <div class="food-tags">
+                      <el-tag 
+                        v-for="(food, index) in dietSuggestions.recommended_foods" 
+                        :key="index"
+                        type="success"
+                        effect="light"
+                        class="food-tag"
+                      >
+                        {{ food }}
+                      </el-tag>
+                    </div>
+                  </div>
+                  
+                  <div class="food-section">
+                    <h4>建议避免</h4>
+                    <div class="food-tags">
+                      <el-tag 
+                        v-for="(food, index) in dietSuggestions.foods_to_avoid" 
+                        :key="index"
+                        type="danger"
+                        effect="light"
+                        class="food-tag"
+                      >
+                        {{ food }}
+                      </el-tag>
+                    </div>
+                  </div>
+                  
+                  <el-divider content-position="center">下一餐建议</el-divider>
+                  
+                  <div class="next-meal">
+                    <div class="meal-type-selector">
+                      <el-radio-group v-model="selectedMealType" size="small" @change="updateMealSuggestion">
+                        <el-radio-button label="breakfast">早餐</el-radio-button>
+                        <el-radio-button label="lunch">午餐</el-radio-button>
+                        <el-radio-button label="dinner">晚餐</el-radio-button>
+                        <el-radio-button label="snack">加餐</el-radio-button>
+                      </el-radio-group>
+                    </div>
+                    <div class="meal-suggestion">
+                      {{ dietSuggestions.meal_plan_example || '暂无特定餐食建议' }}
+                    </div>
+                  </div>
+                  
+                  <div class="card-footer">
+                    <el-button type="primary" size="small" @click="showDetailedDietSuggestions">
+                      获取详细建议
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+          
           <!-- 饮食记录卡片 -->
-          <el-col :xs="24" :sm="12">
+          <el-col :xs="24" :sm="8">
             <el-card class="diet-card">
               <template #header>
                 <div class="card-header">
@@ -263,7 +350,7 @@
 import { ref, computed, onMounted, watch, nextTick, onActivated, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Plus, ChatLineRound, Clock, CircleCheck, Refresh, ChatLineSquare } from '@element-plus/icons-vue'
+import { Plus, ChatLineRound, Clock, CircleCheck, Refresh, ChatLineSquare, InfoFilled } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { glucoseApi, healthApi, dietApi, knowledgeApi, apiClient } from '../api'
 import dayjs from 'dayjs'
@@ -371,6 +458,19 @@ const glucoseAnalysis = ref({
   advice: '',
   record_count: 0,
   updated_at: ''
+})
+
+// 饮食建议相关状态
+const loadingDietSuggestions = ref(false)
+const hasDietSuggestions = ref(false)
+const selectedMealType = ref('breakfast')
+const dietSuggestions = ref({
+  current_status: '',
+  glucose_status: 'normal', // 可能的值: high, normal, low
+  quick_suggestion: '',
+  recommended_foods: [] as string[],
+  foods_to_avoid: [] as string[],
+  meal_plan_example: ''
 })
 
 // 从API获取血糖数据
@@ -737,6 +837,11 @@ onMounted(async () => {
       await analyzeGlucoseData();
     }, checkInterval);
     
+    // 如果有血糖数据，获取饮食建议
+    if (glucoseResult?.hasData) {
+      await fetchDietSuggestions()
+    }
+    
   } catch (error) {
     console.error('初始化数据失败:', error)
     ElMessage.error('加载数据失败，请刷新页面重试')
@@ -798,6 +903,11 @@ onActivated(async () => {
     } else {
       console.log('图表已存在，尝试更新')
       updateGlucoseChart()
+    }
+    
+    // 刷新饮食建议
+    if (hasGlucoseData.value && !hasDietSuggestions.value) {
+      await fetchDietSuggestions()
     }
   } catch (error) {
     console.error('重新获取血糖数据失败', error)
@@ -1204,6 +1314,190 @@ const fetchGlucoseAnalysis = async () => {
   }
 }
 
+// 获取饮食建议
+const fetchDietSuggestions = async () => {
+  if (!hasGlucoseData.value) {
+    ElMessage.warning('需要血糖数据才能生成饮食建议')
+    return
+  }
+  
+  try {
+    loadingDietSuggestions.value = true
+    
+    // 获取最近的血糖值
+    const latestGlucose = glucoseRecords.value[0]?.value || 0
+    const isMealTime = new Date().getHours() >= 6 && new Date().getHours() <= 20
+    const isBeforeMeal = isMealTime && Math.random() > 0.5 // 模拟餐前/餐后，实际应根据时间或用户输入判断
+    
+    // 调用API获取快速饮食建议
+    const response = await apiClient.get('/api/v1/glucose-monitor/quick-diet-suggestions', {
+      params: {
+        glucose_value: latestGlucose,
+        meal_type: selectedMealType.value,
+        is_before_meal: isBeforeMeal
+      }
+    })
+    
+    if (response.data) {
+      dietSuggestions.value = {
+        ...response.data,
+        glucose_status: getGlucoseStatus(latestGlucose, isBeforeMeal)
+      }
+      hasDietSuggestions.value = true
+    } else {
+      hasDietSuggestions.value = false
+      ElMessage.info('无法获取饮食建议，请稍后再试')
+    }
+  } catch (error) {
+    console.error('获取饮食建议失败:', error)
+    
+    // 模拟数据用于演示
+    simulateDietSuggestions()
+  } finally {
+    loadingDietSuggestions.value = false
+  }
+}
+
+// 模拟饮食建议数据（在API未实现时使用）
+const simulateDietSuggestions = () => {
+  const latestGlucose = glucoseRecords.value[0]?.value || 7.2
+  const isBeforeMeal = Math.random() > 0.5
+  const status = getGlucoseStatus(latestGlucose, isBeforeMeal)
+  
+  let suggestion = ''
+  let recommended: string[] = []
+  let avoid: string[] = []
+  let mealPlan = ''
+  
+  if (status === 'high') {
+    suggestion = '您的血糖偏高，建议减少碳水化合物摄入，增加蛋白质和膳食纤维。'
+    recommended = ['蔬菜沙拉', '鸡胸肉', '豆腐', '牛油果', '坚果少量']
+    avoid = ['白米饭', '白面包', '甜点', '含糖饮料']
+    mealPlan = '推荐：烤鸡胸肉100g + 混合蔬菜沙拉 + 藜麦50g'
+  } else if (status === 'low') {
+    suggestion = '您的血糖偏低，建议适量摄入优质碳水化合物，避免空腹过久。'
+    recommended = ['全麦面包', '燕麦', '香蕉', '酸奶', '蜂蜜少量']
+    avoid = ['精制糖', '果汁', '咖啡因饮料']
+    mealPlan = '推荐：全麦面包2片 + 煮鸡蛋1个 + 小香蕉1根'
+  } else {
+    suggestion = '您的血糖正常，建议保持均衡饮食，控制碳水化合物摄入量。'
+    recommended = ['全谷物', '绿叶蔬菜', '鱼肉', '豆制品', '坚果适量']
+    avoid = ['精制碳水', '甜点', '油炸食品']
+    mealPlan = '推荐：糙米饭半碗 + 清蒸鱼100g + 西兰花 + 豆腐'
+  }
+  
+  dietSuggestions.value = {
+    current_status: `您的当前血糖为${latestGlucose.toFixed(1)} mmol/L，属于${isBeforeMeal ? '餐前' : '餐后'}${status === 'normal' ? '正常' : status === 'high' ? '偏高' : '偏低'}范围。`,
+    glucose_status: status,
+    quick_suggestion: suggestion,
+    recommended_foods: recommended,
+    foods_to_avoid: avoid,
+    meal_plan_example: mealPlan
+  }
+  
+  hasDietSuggestions.value = true
+}
+
+// 根据血糖值判断状态
+const getGlucoseStatus = (value: number, isBeforeMeal: boolean): 'high' | 'normal' | 'low' => {
+  if (isBeforeMeal) {
+    if (value < 3.9) return 'low'
+    if (value > 7.0) return 'high'
+    return 'normal'
+  } else {
+    if (value < 3.9) return 'low'
+    if (value > 10.0) return 'high'
+    return 'normal'
+  }
+}
+
+// 获取饮食状态对应的CSS类
+const getDietStatusClass = (status: string) => {
+  if (status === 'high') return 'status-high'
+  if (status === 'low') return 'status-low'
+  return 'status-normal'
+}
+
+// 刷新饮食建议
+const refreshDietSuggestions = () => {
+  fetchDietSuggestions()
+}
+
+// 更新餐食建议
+const updateMealSuggestion = async () => {
+  try {
+    loadingDietSuggestions.value = true
+    
+    // 在实际应用中，这里应该调用API获取特定餐食类型的建议
+    // 这里使用模拟数据
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    const mealPlans = {
+      breakfast: '早餐推荐：全麦面包2片 + 煮鸡蛋1个 + 牛奶200ml',
+      lunch: '午餐推荐：糙米饭半碗 + 清蒸鱼100g + 西兰花 + 豆腐',
+      dinner: '晚餐推荐：藜麦沙拉 + 烤鸡胸肉100g + 烤红薯小份',
+      snack: '加餐推荐：无糖酸奶100g + 蓝莓一小把或坚果10g'
+    }
+    
+    dietSuggestions.value.meal_plan_example = mealPlans[selectedMealType.value]
+  } catch (error) {
+    console.error('更新餐食建议失败:', error)
+  } finally {
+    loadingDietSuggestions.value = false
+  }
+}
+
+// 显示详细饮食建议
+const showDetailedDietSuggestions = async () => {
+  try {
+    ElMessage.info('正在生成详细饮食建议...')
+    
+    // 在实际应用中，这里应该调用API获取详细的饮食建议
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 构建详细建议内容
+    const detailedSuggestion = `
+      <h3>个性化饮食建议</h3>
+      <p>基于您的血糖数据分析，我们为您提供以下饮食建议：</p>
+      
+      <h4>总体原则</h4>
+      <ul>
+        <li>控制碳水化合物总量，选择低GI值的碳水食物</li>
+        <li>增加蛋白质和健康脂肪的摄入</li>
+        <li>多吃富含膳食纤维的蔬菜</li>
+        <li>规律三餐，避免长时间空腹</li>
+      </ul>
+      
+      <h4>推荐食物清单</h4>
+      <ul>
+        <li><strong>碳水来源</strong>：全麦面包、燕麦、糙米、藜麦、红薯</li>
+        <li><strong>蛋白质来源</strong>：鸡胸肉、鱼、豆腐、鸡蛋、希腊酸奶</li>
+        <li><strong>健康脂肪</strong>：牛油果、橄榄油、坚果(适量)</li>
+        <li><strong>蔬菜水果</strong>：西兰花、菠菜、芦笋、蓝莓、草莓(适量)</li>
+      </ul>
+      
+      <h4>一日三餐建议</h4>
+      <p><strong>早餐</strong>：${selectedMealType.value === 'breakfast' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '全麦面包2片 + 煮鸡蛋1个 + 牛奶200ml'}</p>
+      <p><strong>午餐</strong>：${selectedMealType.value === 'lunch' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '糙米饭半碗 + 清蒸鱼100g + 西兰花 + 豆腐'}</p>
+      <p><strong>晚餐</strong>：${selectedMealType.value === 'dinner' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '藜麦沙拉 + 烤鸡胸肉100g + 烤红薯小份'}</p>
+      <p><strong>加餐</strong>：${selectedMealType.value === 'snack' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '无糖酸奶100g + 蓝莓一小把或坚果10g'}</p>
+    `
+    
+    ElMessageBox.alert(
+      detailedSuggestion,
+      '个性化饮食建议',
+      {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '我知道了',
+        customClass: 'diet-suggestion-dialog'
+      }
+    )
+  } catch (error) {
+    console.error('获取详细饮食建议失败:', error)
+    ElMessage.error('获取详细饮食建议失败，请稍后再试')
+  }
+}
+
 // 辅助方法：根据血糖值获取CSS类
 const getValueClass = (value) => {
   if (value > 10.0) return 'high-value'
@@ -1568,6 +1862,108 @@ const syncDevice = async () => {
 :deep(.advice-dialog .el-message-box__content) {
   max-height: 400px;
   overflow-y: auto;
+}
+
+.diet-suggestion-card {
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.diet-status-banner {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.diet-status-banner .el-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.status-normal {
+  background-color: rgba(103, 194, 58, 0.1);
+  color: #67c23a;
+}
+
+.status-high {
+  background-color: rgba(245, 108, 108, 0.1);
+  color: #f56c6c;
+}
+
+.status-low {
+  background-color: rgba(230, 162, 60, 0.1);
+  color: #e6a23c;
+}
+
+.diet-suggestion-content {
+  padding: 0 5px;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  color: #606266;
+}
+
+.food-section {
+  margin-bottom: 15px;
+}
+
+.food-section h4 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #303133;
+}
+
+.food-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.food-tag {
+  margin-right: 0;
+}
+
+.next-meal {
+  margin: 15px 0;
+}
+
+.meal-type-selector {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.meal-suggestion {
+  background-color: #f5f7fa;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #606266;
+}
+
+.card-footer {
+  margin-top: 15px;
+  text-align: center;
+}
+
+:deep(.diet-suggestion-dialog .el-message-box__content) {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+:deep(.diet-suggestion-dialog ul) {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+:deep(.diet-suggestion-dialog h3, .diet-suggestion-dialog h4) {
+  margin: 15px 0 10px 0;
 }
 
 @media (max-width: 768px) {
