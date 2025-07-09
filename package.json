@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@stagewise-plugins/vue": "^0.5.0",
+    "@stagewise/toolbar-vue": "^0.5.0",
     "date-fns": "^4.1.0"
   }
 }

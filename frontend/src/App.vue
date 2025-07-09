@@ -15,6 +15,11 @@
           <component :is="Component" />
         </transition>
       </router-view>
+
+      <!-- Stagewise工具栏 (仅在开发环境中显示) -->
+      <client-only v-if="isDevelopment">
+        <stagewise-toolbar :config="stagwiseConfig" />
+      </client-only>
     </div>
   </el-config-provider>
 </template>
@@ -23,11 +28,23 @@
 import { ElConfigProvider, ElMessageBox } from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { useUserStore } from './stores/user'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { StagewiseToolbar } from '@stagewise/toolbar-vue'
+import VuePlugin from '@stagewise-plugins/vue'
+import ClientOnly from './components/ClientOnly.vue'
 
 const userStore = useUserStore()
 const isAuthenticated = computed(() => userStore.isAuthenticated)
 const userFullName = computed(() => userStore.userFullName)
+
+// 检测是否为开发环境
+// @ts-ignore - Vite特定的环境变量
+const isDevelopment = process.env.NODE_ENV !== 'production'
+
+// Stagewise配置
+const stagwiseConfig = {
+  plugins: [VuePlugin]
+}
 
 const handleLogout = () => {
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {

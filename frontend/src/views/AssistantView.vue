@@ -434,11 +434,40 @@ const handleCloseSourceDialog = () => {
 </script>
 
 <style scoped>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 定义主题色变量 */
+:root {
+  --metric-color: #2ecc71; /* 绿色 */
+  --diet-suggestion-color: #e67e22; /* 橙色 */
+  --diet-record-color: #f1c40f; /* 黄色 */
+  --glucose-monitor-color: #3498db; /* 蓝色 */
+  --reminder-color: #9b59b6; /* 紫色 */
+  --knowledge-color: #34495e; /* 深蓝灰色 */
+  --primary-color: #0072ff; /* 基础蓝色 */
+  --primary-color-light: #eaf5ff; /* 基础蓝色浅色版 */
+  --background-color: #f0f4f8; /* 整体背景色 */
+  --text-color-primary: #2c3e50; /* 主要文本颜色 */
+  --text-color-secondary: #576b81; /* 次要文本颜色 */
+  --border-color: #eef2f7; /* 边框颜色 */
+}
+
 .assistant-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--background-color);
+  background-color: var(--background-color); /* 与DashboardView保持一致 */
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif; /* 与DashboardView保持一致 */
+  padding: 24px; /* 与DashboardView的容器padding一致 */
 }
 
 .chat-header {
@@ -446,20 +475,28 @@ const handleCloseSourceDialog = () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color); /* 使用主题边框色 */
   background-color: white;
+  border-radius: 16px 16px 0 0; /* 圆角与卡片保持一致 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03); /* 浅阴影 */
+  margin-bottom: 16px;
 }
 
 .chat-header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--primary-color); /* 使用主题蓝色 */
+  font-weight: 600;
 }
 
 .chat-body {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  background-color: white; /* 聊天背景为白色 */
+  border-radius: 16px; /* 圆角与卡片保持一致 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05); /* 浅阴影 */
+  margin-bottom: 16px;
 }
 
 .welcome-message {
@@ -473,17 +510,18 @@ const handleCloseSourceDialog = () => {
 
 .welcome-icon {
   margin-bottom: 16px;
-  color: var(--primary-color);
+  color: var(--primary-color); /* 使用主题蓝色 */
 }
 
 .welcome-message h3 {
   margin: 0 0 8px 0;
   font-size: 1.5rem;
+  color: var(--text-color-primary); /* 使用主要文本颜色 */
 }
 
 .welcome-message p {
   margin: 0 0 24px 0;
-  color: var(--text-color-secondary);
+  color: var(--text-color-secondary); /* 使用次要文本颜色 */
 }
 
 .model-status {
@@ -498,14 +536,33 @@ const handleCloseSourceDialog = () => {
   max-width: 600px;
 }
 
+.suggestion-chips .el-button {
+  border-radius: 20px; /* 圆角 */
+  font-weight: 600;
+  background-color: var(--primary-color-light); /* 浅蓝色背景 */
+  color: var(--primary-color); /* 蓝色文字 */
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.suggestion-chips .el-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .message-container {
   display: flex;
   margin-bottom: 16px;
   gap: 12px;
+  align-items: flex-start; /* 消息顶部对齐 */
 }
 
 .user-message {
   flex-direction: row-reverse;
+  justify-content: flex-end; /* 用户消息靠右 */
 }
 
 .message-avatar {
@@ -513,20 +570,36 @@ const handleCloseSourceDialog = () => {
 }
 
 .message-content {
-  background-color: white;
   padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 16px; /* 圆角与Dashboard卡片一致 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05); /* 阴影与Dashboard卡片一致 */
   max-width: 70%;
+  animation: fadeInUp 0.5s ease-in-out forwards; /* 添加动画 */
+  opacity: 0; /* 初始透明 */
+  position: relative; /* 为animation-delay提供上下文 */
 }
 
+.message-container:nth-child(even) .message-content { animation-delay: 0.1s; } /* 错落动画 */
+.message-container:nth-child(odd) .message-content { animation-delay: 0.2s; } /* 错落动画 */
+
 .user-message .message-content {
-  background-color: var(--primary-color-light);
+  background-color: var(--primary-color-light); /* 浅蓝色背景 */
+  color: var(--text-color-primary); /* 主要文本颜色 */
+  margin-left: auto; /* 用户消息靠右 */
+}
+
+.assistant-message .message-content {
+  background-color: white; /* 助手消息白色背景 */
+  color: var(--text-color-primary); /* 主要文本颜色 */
+  margin-right: auto; /* 助手消息靠左 */
+  border: 1px solid var(--border-color); /* 浅边框 */
 }
 
 .message-text {
   white-space: pre-wrap;
   word-break: break-word;
+  line-height: 1.6; /* 更好的阅读体验 */
+  color: var(--text-color-primary);
 }
 
 .message-time {
@@ -543,6 +616,21 @@ const handleCloseSourceDialog = () => {
   padding: 16px;
   background-color: white;
   border-top: 1px solid var(--border-color);
+  border-radius: 0 0 16px 16px; /* 底部圆角 */
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.03); /* 浅阴影 */
+}
+
+.chat-input .el-textarea__inner {
+  border-radius: 8px; /* 输入框圆角 */
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chat-input .el-textarea__inner:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2);
 }
 
 .send-options {
@@ -551,32 +639,43 @@ const handleCloseSourceDialog = () => {
   align-items: center;
 }
 
+.send-options .el-checkbox {
+  color: var(--text-color-secondary);
+}
+
+.send-options .el-button {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  border-radius: 8px; /* 按钮圆角 */
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.send-options .el-button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 .typing-indicator {
   display: flex;
   gap: 4px;
   padding: 12px;
   margin-bottom: 16px;
   width: fit-content;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
 }
 
 .typing-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--text-color-secondary);
+  background-color: var(--primary-color); /* 使用主题色 */
   animation: typing-animation 1.4s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
 }
 
 @keyframes typing-animation {
@@ -592,32 +691,49 @@ const handleCloseSourceDialog = () => {
 
 .loading-container {
   padding: 20px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
 }
 
 .message-sources {
   margin-top: 10px;
   font-size: 0.9em;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color); /* 使用主题边框色 */
   padding-top: 8px;
 }
 
 .sources-title {
   font-weight: bold;
   margin-bottom: 4px;
+  color: var(--text-color-primary);
 }
 
 .source-item {
   margin-bottom: 4px;
 }
 
+.source-item .el-link {
+  color: var(--primary-color);
+  font-size: 0.85em;
+  transition: color 0.2s;
+}
+
+.source-item .el-link:hover {
+  color: #0056b3;
+}
+
 .source-content {
   margin-top: 10px;
   padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
+  background-color: var(--background-color); /* 使用背景色 */
+  border-radius: 8px; /* 圆角 */
   max-height: 400px;
   overflow-y: auto;
   white-space: pre-wrap;
+  border: 1px solid var(--border-color);
+  color: var(--text-color-primary);
 }
 
 :deep(.message-text) {
@@ -637,6 +753,7 @@ const handleCloseSourceDialog = () => {
   padding: 2px 4px;
   border-radius: 3px;
   font-family: monospace;
+  color: #c7254e;
 }
 
 :deep(.message-text pre) {
@@ -645,4 +762,117 @@ const handleCloseSourceDialog = () => {
   border-radius: 4px;
   overflow-x: auto;
 }
+
+:deep(.message-text strong) {
+  color: var(--primary-color); /* 加粗文本使用主题色 */
+}
+
+/* 调整对话框样式 */
+.el-dialog {
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-dialog__header) {
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 20px;
+}
+
+:deep(.el-dialog__title) {
+  color: var(--text-color-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+  color: var(--text-color-primary);
+}
+
+/* Element Plus 组件样式覆盖 */
+
+/* Dropdown 按钮 */
+.chat-actions .el-dropdown .el-button {
+  border-radius: 20px; /* 按钮圆角 */
+  font-weight: 600;
+  padding: 8px 15px;
+  transition: all 0.2s ease;
+}
+
+.chat-actions .el-dropdown .el-button--primary.is-plain {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color);
+  border-color: var(--primary-color-light);
+}
+
+.chat-actions .el-dropdown .el-button--primary.is-plain:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropdown 菜单 */
+:deep(.el-dropdown-menu) {
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); 
+  border: 1px solid var(--border-color);
+  padding: 8px;
+}
+
+:deep(.el-dropdown-menu__item) {
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-color-primary);
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color);
+}
+
+/* Checkbox */
+.send-options .el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.send-options .el-checkbox__label {
+  color: var(--text-color-secondary);
+}
+
+/* Tag */
+.model-status .el-tag {
+  border-radius: 16px; /* 大圆角 */
+  font-weight: 500;
+  padding: 0 12px;
+  height: 32px;
+  line-height: 30px;
+}
+
+.model-status .el-tag--success {
+  background-color: rgba(46, 204, 113, 0.15); /* 绿色浅色背景 */
+  border-color: rgba(46, 204, 113, 0.3); /* 绿色边框 */
+  color: #27ae60; /* 深绿色文本 */
+}
+
+.model-status .el-tag--danger {
+  background-color: rgba(231, 76, 60, 0.15); /* 红色浅色背景 */
+  border-color: rgba(231, 76, 60, 0.3); /* 红色边框 */
+  color: #c0392b; /* 深红色文本 */
+}
+
+/* 移除原有的变量定义，现在从:root获取 */
+/*
+:root {
+  --background-color: #f0f4f8;
+  --primary-color: #409EFF;
+  --primary-color-light: #ecf5ff;
+  --text-color-primary: #303133;
+  --text-color-secondary: #909399;
+  --border-color: #dcdfe6;
+}
+*/
 </style>
