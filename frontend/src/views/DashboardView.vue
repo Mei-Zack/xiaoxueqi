@@ -292,6 +292,18 @@
                 </div>
               </div>
               
+              <!-- 添加：AI预警信息展示区域 -->
+              <div v-if="glucoseAnalysis.advice && glucoseAnalysis.advice.length > 5" class="ai-alert-container">
+                <div class="ai-alert-header">
+                  <el-icon><Warning /></el-icon>
+                  <span>AI血糖风险评估</span>
+                </div>
+                <div class="ai-alert-content">
+                  {{ truncateAdvice(glucoseAnalysis.advice, 120) }}
+                </div>
+                <el-button type="text" @click="showFullAdvice">查看完整分析</el-button>
+              </div>
+              
               <!-- 智能建议预览 -->
               <div class="advice-preview">
                 <div class="advice-title">
@@ -350,7 +362,7 @@
 import { ref, computed, onMounted, watch, nextTick, onActivated, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Plus, ChatLineRound, Clock, CircleCheck, Refresh, ChatLineSquare, InfoFilled } from '@element-plus/icons-vue'
+import { Plus, ChatLineRound, Clock, CircleCheck, Refresh, ChatLineSquare, InfoFilled, Warning } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { glucoseApi, healthApi, dietApi, knowledgeApi, apiClient } from '../api'
 import dayjs from 'dayjs'
@@ -479,12 +491,10 @@ const fetchGlucoseData = async () => {
     loading.value = true
     console.log('开始获取血糖数据...')
     
-    // 使用新的API路径
-    const response = await apiClient.get('/api/v1/glucose/recent', {
-      params: {
-        days: glucosePeriod.value === 'week' ? 7 : 30
-      }
-    })
+    // 使用新的API函数
+    const response = await glucoseApi.getRecentGlucoseRecords(
+      glucosePeriod.value === 'week' ? 7 : 30
+    )
     
     console.log('获取到血糖数据:', response.data)
     
@@ -724,11 +734,7 @@ const importGlucoseData = async () => {
 const analyzeGlucoseData = async () => {
   try {
     // 获取最近的血糖数据
-    const recentResponse = await apiClient.get('/api/v1/glucose/recent', {
-      params: {
-        days: 1 // 获取最近1天的数据
-      }
-    });
+    const recentResponse = await glucoseApi.getRecentGlucoseRecords(1); // 获取最近1天的数据
     
     if (!recentResponse.data || recentResponse.data.length === 0) {
       console.log('没有最近的血糖数据可供分析');
@@ -738,7 +744,49 @@ const analyzeGlucoseData = async () => {
     const records = recentResponse.data;
     console.log('获取到最近的血糖数据:', records);
     
-    // 分析血糖数据
+    // 调用后端分析API获取血糖异常预警
+    try {
+      const analyzeResponse = await apiClient.post('/api/v1/glucose-monitor/analyze', {
+        hours: 24 // 分析最近24小时的数据
+      }, {
+        timeout: 20000 // 设置20秒超时时间
+      });
+      
+      // 处理API返回的预警信息
+      if (analyzeResponse.data?.has_alerts) {
+        // 如果有预警信息并且包含大模型生成的警报消息
+        if (analyzeResponse.data.alert_message) {
+          // 清除现有的相似警报
+          glucoseAlerts.value = glucoseAlerts.value.filter(alert => !alert.title.includes('血糖异常'));
+          
+          // 添加新的警报，显示大模型生成的个性化预警信息
+          addAlert(
+            '血糖异常预警', 
+            analyzeResponse.data.alert_message, 
+            analyzeResponse.data.alerts.some(a => a.severity === 'high') ? 'error' : 'warning'
+          );
+          console.log('添加大模型生成的预警消息:', analyzeResponse.data.alert_message);
+          
+          return {
+            statistics: analyzeResponse.data.statistics || {
+              average: 0,
+              max: 0,
+              min: 0,
+              count: records.length,
+              high_count: 0,
+              low_count: 0
+            },
+            has_alerts: true,
+            alert_message: analyzeResponse.data.alert_message
+          };
+        }
+      }
+    } catch (apiError) {
+      console.error('调用血糖分析API失败，回退到本地分析:', apiError);
+      // 发生错误时继续使用本地分析
+    }
+    
+    // 本地分析血糖数据（作为备选方案）
     const highThreshold = 7.8; // 高血糖阈值
     const lowThreshold = 3.9; // 低血糖阈值
     
@@ -1234,9 +1282,7 @@ const fetchGlucoseAnalysis = async () => {
     loadingAnalysis.value = true
     
     // 获取最近记录的血糖数据
-    const recentResponse = await apiClient.get('/api/v1/glucose/recent', {
-      params: { days: 3 }
-    })
+    const recentResponse = await glucoseApi.getRecentGlucoseRecords(3)
     
     if (!recentResponse.data || recentResponse.data.length < 3) {
       hasAnalysisData.value = false
@@ -1244,10 +1290,28 @@ const fetchGlucoseAnalysis = async () => {
       return
     }
     
-    // 获取统计数据
-    const statsResponse = await apiClient.get('/api/v1/glucose/statistics', {
-      params: { period: 'week' }
+    // 使用后端分析API获取血糖异常预警和统计数据
+    const analyzeResponse = await apiClient.post('/api/v1/glucose-monitor/analyze', {
+      hours: 72 // 分析最近72小时(3天)的数据
+    }, {
+      timeout: 30000 // 设置30秒超时时间
     })
+    
+    // 如果有预警信息，显示在顶部警报区域
+    if (analyzeResponse.data?.has_alerts && analyzeResponse.data?.alert_message) {
+      // 清除现有的相似警报
+      glucoseAlerts.value = glucoseAlerts.value.filter(alert => !alert.title.includes('血糖异常'))
+      
+      // 添加新的警报，显示大模型生成的个性化预警信息
+      addAlert(
+        '血糖异常预警', 
+        analyzeResponse.data.alert_message, 
+        analyzeResponse.data.alerts.some(a => a.severity === 'high') ? 'error' : 'warning'
+      )
+    }
+    
+    // 获取统计数据
+    const statsResponse = await glucoseApi.getStatistics('week')
     
     if (statsResponse.data) {
       // 构建分析数据结构
@@ -1275,26 +1339,36 @@ const fetchGlucoseAnalysis = async () => {
       const highPercentage = (highCount / records.length) * 100
       const lowPercentage = (lowCount / records.length) * 100
       
-      // 生成简单的建议文本
-      let advice = '根据您最近三天的血糖记录分析：\n\n'
+      // 优先使用大模型生成的建议
+      let advice = ''
       
-      if (mean > 7.8) {
-        advice += '您的平均血糖偏高，建议控制碳水化合物摄入，增加运动量。\n\n'
-      } else if (mean < 3.9) {
-        advice += '您的平均血糖偏低，请注意及时补充碳水化合物，避免低血糖发生。\n\n'
+      // 判断是否有可用的大模型生成的建议
+      if (analyzeResponse.data?.alert_message) {
+        // 使用大模型生成的个性化预警建议
+        advice = analyzeResponse.data.alert_message
+        console.log('使用大模型生成的预警建议:', advice)
       } else {
-        advice += '您的平均血糖处于正常范围，请继续保持良好的生活方式。\n\n'
+        // 生成本地建议文本
+        advice = '根据您最近三天的血糖记录分析：\n\n'
+        
+        if (mean > 7.8) {
+          advice += '您的平均血糖偏高，建议控制碳水化合物摄入，增加运动量。\n\n'
+        } else if (mean < 3.9) {
+          advice += '您的平均血糖偏低，请注意及时补充碳水化合物，避免低血糖发生。\n\n'
+        } else {
+          advice += '您的平均血糖处于正常范围，请继续保持良好的生活方式。\n\n'
+        }
+        
+        if (std > 2.0) {
+          advice += '您的血糖波动较大，建议规律三餐，避免暴饮暴食，监测血糖的频率可以适当增加。\n\n'
+        }
+        
+        if (inRangePercentage < 70) {
+          advice += `您的血糖达标率为${inRangePercentage.toFixed(0)}%，低于理想水平(70%)，建议咨询医生调整治疗方案。\n\n`
+        }
+        
+        advice += '请记住，良好的饮食习惯、适当的运动和按时服药是控制血糖的关键。'
       }
-      
-      if (std > 2.0) {
-        advice += '您的血糖波动较大，建议规律三餐，避免暴饮暴食，监测血糖的频率可以适当增加。\n\n'
-      }
-      
-      if (inRangePercentage < 70) {
-        advice += `您的血糖达标率为${inRangePercentage.toFixed(0)}%，低于理想水平(70%)，建议咨询医生调整治疗方案。\n\n`
-      }
-      
-      advice += '请记住，良好的饮食习惯、适当的运动和按时服药是控制血糖的关键。'
       
       // 更新分析数据
       glucoseAnalysis.value = {
@@ -1307,7 +1381,20 @@ const fetchGlucoseAnalysis = async () => {
           high_percentage: highPercentage,
           low_percentage: lowPercentage
         },
-        patterns: {},
+        patterns: {
+          fasting_avg: records.filter(r => 
+            ['BEFORE_BREAKFAST', 'BEFORE_LUNCH', 'BEFORE_DINNER'].includes(r.measurement_time)
+          ).reduce((sum, r) => sum + r.value, 0) / 
+          Math.max(1, records.filter(r => 
+            ['BEFORE_BREAKFAST', 'BEFORE_LUNCH', 'BEFORE_DINNER'].includes(r.measurement_time)
+          ).length),
+          postprandial_avg: records.filter(r => 
+            ['AFTER_BREAKFAST', 'AFTER_LUNCH', 'AFTER_DINNER'].includes(r.measurement_time)
+          ).reduce((sum, r) => sum + r.value, 0) / 
+          Math.max(1, records.filter(r => 
+            ['AFTER_BREAKFAST', 'AFTER_LUNCH', 'AFTER_DINNER'].includes(r.measurement_time)
+          ).length)
+        },
         advice: advice,
         record_count: records.length,
         updated_at: new Date().toISOString()
@@ -1337,34 +1424,27 @@ const fetchDietSuggestions = async () => {
   try {
     loadingDietSuggestions.value = true
     
-    // 获取最近的血糖值
-    const latestGlucose = glucoseRecords.value[0]?.value || 0
-    const isMealTime = new Date().getHours() >= 6 && new Date().getHours() <= 20
-    const isBeforeMeal = isMealTime && Math.random() > 0.5 // 模拟餐前/餐后，实际应根据时间或用户输入判断
+    // 暂时移除大模型API调用，直接使用模拟数据
+    // const latestGlucose = glucoseRecords.value[0]?.value || 0
+    // const isMealTime = new Date().getHours() >= 6 && new Date().getHours() <= 20
+    // const isBeforeMeal = isMealTime && Math.random() > 0.5
     
-    // 调用API获取快速饮食建议
-    const response = await apiClient.get('/api/v1/glucose-monitor/quick-diet-suggestions', {
-      params: {
-        glucose_value: latestGlucose,
-        meal_type: selectedMealType.value,
-        is_before_meal: isBeforeMeal
-      }
-    })
+    // 不再调用API，直接使用模拟数据
+    // const response = await apiClient.get('/api/v1/glucose-monitor/quick-diet-suggestions', {
+    //   params: {
+    //     glucose_value: latestGlucose,
+    //     meal_type: selectedMealType.value,
+    //     is_before_meal: isBeforeMeal
+    //   }
+    // })
     
-    if (response.data) {
-      dietSuggestions.value = {
-        ...response.data,
-        glucose_status: getGlucoseStatus(latestGlucose, isBeforeMeal)
-      }
-      hasDietSuggestions.value = true
-    } else {
-      hasDietSuggestions.value = false
-      ElMessage.info('无法获取饮食建议，请稍后再试')
-    }
+    // 直接使用模拟数据
+    await new Promise(resolve => setTimeout(resolve, 500)) // 模拟延迟
+    simulateDietSuggestions()
+    
   } catch (error) {
     console.error('获取饮食建议失败:', error)
-    
-    // 模拟数据用于演示
+    // 出错时也使用模拟数据
     simulateDietSuggestions()
   } finally {
     loadingDietSuggestions.value = false
@@ -1465,40 +1545,42 @@ const showDetailedDietSuggestions = async () => {
   try {
     ElMessage.info('正在生成详细饮食建议...')
     
-    // 在实际应用中，这里应该调用API获取详细的饮食建议
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 调用后端API获取详细的血糖分析报告和管理建议
+    const response = await apiClient.post('/api/v1/glucose-monitor/analyze-trend', { days: 3 }, {
+      timeout: 30000 // 将超时时间从默认的10秒增加到30秒
+    })
+    
+    if (!response.data || !response.data.advice) {
+      throw new Error('无法获取血糖分析和建议')
+    }
+    
+    // 使用大模型生成的血糖分析报告和建议
+    const adviceContent = response.data.advice
+    
+    // 将大模型生成的文本处理为HTML格式
+    let processedAdvice = adviceContent
+      .replace(/\n\n/g, '<br><br>') // 替换双换行为HTML换行
+      .replace(/###\s+(.*?)(\n|$)/g, '<h3>$1</h3>') // 处理 ### 标题
+      .replace(/####\s+(.*?)(\n|$)/g, '<h4>$1</h4>') // 处理 #### 标题
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 处理加粗文本
     
     // 构建详细建议内容
     const detailedSuggestion = `
-      <h3>个性化饮食建议</h3>
-      <p>基于您的血糖数据分析，我们为您提供以下饮食建议：</p>
+      <div class="blood-glucose-analysis">
+        ${processedAdvice}
+      </div>
       
-      <h4>总体原则</h4>
-      <ul>
-        <li>控制碳水化合物总量，选择低GI值的碳水食物</li>
-        <li>增加蛋白质和健康脂肪的摄入</li>
-        <li>多吃富含膳食纤维的蔬菜</li>
-        <li>规律三餐，避免长时间空腹</li>
-      </ul>
-      
-      <h4>推荐食物清单</h4>
-      <ul>
-        <li><strong>碳水来源</strong>：全麦面包、燕麦、糙米、藜麦、红薯</li>
-        <li><strong>蛋白质来源</strong>：鸡胸肉、鱼、豆腐、鸡蛋、希腊酸奶</li>
-        <li><strong>健康脂肪</strong>：牛油果、橄榄油、坚果(适量)</li>
-        <li><strong>蔬菜水果</strong>：西兰花、菠菜、芦笋、蓝莓、草莓(适量)</li>
-      </ul>
-      
-      <h4>一日三餐建议</h4>
-      <p><strong>早餐</strong>：${selectedMealType.value === 'breakfast' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '全麦面包2片 + 煮鸡蛋1个 + 牛奶200ml'}</p>
-      <p><strong>午餐</strong>：${selectedMealType.value === 'lunch' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '糙米饭半碗 + 清蒸鱼100g + 西兰花 + 豆腐'}</p>
-      <p><strong>晚餐</strong>：${selectedMealType.value === 'dinner' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '藜麦沙拉 + 烤鸡胸肉100g + 烤红薯小份'}</p>
-      <p><strong>加餐</strong>：${selectedMealType.value === 'snack' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '无糖酸奶100g + 蓝莓一小把或坚果10g'}</p>
+      <h4 class="additional-meal-suggestions">根据您选择的餐型，我们提供以下建议</h4>
+      <p><strong>${selectedMealType.value === 'breakfast' ? '早餐' : 
+                    selectedMealType.value === 'lunch' ? '午餐' : 
+                    selectedMealType.value === 'dinner' ? '晚餐' : '加餐'}</strong>：
+         <span style="color:#409EFF">${dietSuggestions.value.meal_plan_example}</span>
+      </p>
     `
     
     ElMessageBox.alert(
       detailedSuggestion,
-      '个性化饮食建议',
+      '个性化饮食与血糖管理建议',
       {
         dangerouslyUseHTMLString: true,
         confirmButtonText: '我知道了',
@@ -1508,7 +1590,50 @@ const showDetailedDietSuggestions = async () => {
   } catch (error) {
     console.error('获取详细饮食建议失败:', error)
     ElMessage.error('获取详细饮食建议失败，请稍后再试')
+    
+    // 错误时回退到本地静态建议
+    fallbackToLocalSuggestions()
   }
+}
+
+// 回退到本地静态建议
+const fallbackToLocalSuggestions = () => {
+  const detailedSuggestion = `
+    <h3>个性化饮食建议</h3>
+    <p>基于您的血糖数据分析，我们为您提供以下饮食建议：</p>
+    
+    <h4>总体原则</h4>
+    <ul>
+      <li>控制碳水化合物总量，选择低GI值的碳水食物</li>
+      <li>增加蛋白质和健康脂肪的摄入</li>
+      <li>多吃富含膳食纤维的蔬菜</li>
+      <li>规律三餐，避免长时间空腹</li>
+    </ul>
+    
+    <h4>推荐食物清单</h4>
+    <ul>
+      <li><strong>碳水来源</strong>：全麦面包、燕麦、糙米、藜麦、红薯</li>
+      <li><strong>蛋白质来源</strong>：鸡胸肉、鱼、豆腐、鸡蛋、希腊酸奶</li>
+      <li><strong>健康脂肪</strong>：牛油果、橄榄油、坚果(适量)</li>
+      <li><strong>蔬菜水果</strong>：西兰花、菠菜、芦笋、蓝莓、草莓(适量)</li>
+    </ul>
+    
+    <h4>一日三餐建议</h4>
+    <p><strong>早餐</strong>：${selectedMealType.value === 'breakfast' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '全麦面包2片 + 煮鸡蛋1个 + 牛奶200ml'}</p>
+    <p><strong>午餐</strong>：${selectedMealType.value === 'lunch' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '糙米饭半碗 + 清蒸鱼100g + 西兰花 + 豆腐'}</p>
+    <p><strong>晚餐</strong>：${selectedMealType.value === 'dinner' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '藜麦沙拉 + 烤鸡胸肉100g + 烤红薯小份'}</p>
+    <p><strong>加餐</strong>：${selectedMealType.value === 'snack' ? '<span style="color:#409EFF">'+dietSuggestions.value.meal_plan_example+'</span>' : '无糖酸奶100g + 蓝莓一小把或坚果10g'}</p>
+  `
+  
+  ElMessageBox.alert(
+    detailedSuggestion,
+    '个性化饮食建议',
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '我知道了',
+      customClass: 'diet-suggestion-dialog'
+    }
+  )
 }
 
 // 辅助方法：根据血糖值获取CSS类
@@ -1547,16 +1672,119 @@ const truncateAdvice = (text, maxLength) => {
 }
 
 // 显示完整建议
-const showFullAdvice = () => {
-  ElMessageBox.alert(
-    `<div style="white-space: pre-line;">${glucoseAnalysis.value.advice}</div>`,
-    '血糖管理建议',
-    {
-      dangerouslyUseHTMLString: true,
-      confirmButtonText: '我知道了',
-      customClass: 'advice-dialog'
+const showFullAdvice = async () => {
+  try {
+    // 显示加载提示
+    ElMessage.info('正在获取最新的血糖风险评估...')
+    
+    // 首先调用analyze接口获取预警信息
+    const alertResponse = await apiClient.post('/api/v1/glucose-monitor/analyze', {
+      hours: 72 // 分析最近72小时的数据
+    }, {
+      timeout: 30000 // 设置30秒超时时间
+    })
+    
+    // 然后调用analyze-trend接口获取详细的血糖分析报告
+    const trendResponse = await apiClient.post('/api/v1/glucose-monitor/analyze-trend', { 
+      days: 3 
+    }, {
+      timeout: 30000 // 设置30秒超时时间
+    })
+    
+    if (!trendResponse.data || !trendResponse.data.advice) {
+      throw new Error('无法获取血糖分析和建议')
     }
-  )
+    
+    // 使用大模型生成的血糖分析报告和建议
+    const adviceContent = trendResponse.data.advice
+    let dialogTitle = '血糖风险评估与管理建议'
+    
+    // 更新当前的建议内容
+    glucoseAnalysis.value.advice = adviceContent
+    
+    // 如果有预警信息，添加到顶部警报区域
+    if (alertResponse.data?.has_alerts && alertResponse.data?.alert_message) {
+      // 清除现有的相似警报
+      glucoseAlerts.value = glucoseAlerts.value.filter(alert => !alert.title.includes('血糖异常'))
+      
+      // 添加新的警报，显示大模型生成的个性化预警信息
+      addAlert(
+        '血糖异常预警', 
+        alertResponse.data.alert_message, 
+        alertResponse.data.alerts.some(a => a.severity === 'high') ? 'error' : 'warning'
+      )
+    }
+    
+    // 将大模型生成的文本处理为HTML格式
+    let processedAdvice = adviceContent
+      .replace(/\n\n/g, '<br><br>') // 替换双换行为HTML换行
+      .replace(/###\s+(.*?)(\n|$)/g, '<h3>$1</h3>') // 处理 ### 标题
+      .replace(/####\s+(.*?)(\n|$)/g, '<h4>$1</h4>') // 处理 #### 标题
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 处理加粗文本
+    
+    // 如果有预警信息，在分析报告前添加预警信息
+    let contentToShow = ``
+    
+    if (alertResponse.data?.has_alerts && alertResponse.data?.alert_message) {
+      contentToShow = `
+        <div class="glucose-alert-warning">
+          <h3>⚠️ 血糖异常预警</h3>
+          <p>${alertResponse.data.alert_message}</p>
+        </div>
+        <div class="blood-glucose-analysis ai-analysis-content">
+          ${processedAdvice}
+        </div>
+      `
+    } else {
+      contentToShow = `
+        <div class="blood-glucose-analysis ai-analysis-content">
+          ${processedAdvice}
+        </div>
+      `
+    }
+    
+    // 显示对话框
+    ElMessageBox.alert(
+      contentToShow,
+      dialogTitle,
+      {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '我知道了',
+        customClass: 'advice-dialog'
+      }
+    )
+  } catch (error) {
+    console.error('获取血糖风险评估失败:', error)
+    ElMessage.error('获取血糖风险评估失败，请稍后再试')
+    
+    // 错误时回退到本地静态建议
+    const staticAdvice = `
+      <h3>血糖管理建议</h3>
+      <p>很抱歉，无法获取实时血糖分析。以下是基于通用规则的建议：</p>
+      
+      <h4>血糖管理原则</h4>
+      <ul>
+        <li>保持规律饮食，避免暴饮暴食</li>
+        <li>增加体育活动，每天至少30分钟中等强度运动</li>
+        <li>按时服药，遵医嘱调整药物剂量</li>
+        <li>定期监测血糖，记录变化趋势</li>
+        <li>避免过度疲劳和精神压力</li>
+      </ul>
+      
+      <h4>监测提示</h4>
+      <p>建议继续监测并记录您的血糖值，特别是在餐前和餐后2小时的数值，这将有助于更准确地评估您的血糖控制情况。</p>
+    `
+    
+    ElMessageBox.alert(
+      `<div class="blood-glucose-analysis ai-analysis-content">${staticAdvice}</div>`,
+      '血糖管理建议',
+      {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '我知道了',
+        customClass: 'advice-dialog'
+      }
+    )
+  }
 }
 
 // 同步设备数据
@@ -2080,6 +2308,24 @@ const syncDevice = async () => {
   color: #0072ff;
 }
 
+:deep(.diet-suggestion-dialog .blood-glucose-analysis) {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fb;
+  border-radius: 8px;
+  border-left: 4px solid #409EFF;
+}
+
+:deep(.diet-suggestion-dialog .additional-meal-suggestions) {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px dashed #dcdfe6;
+}
+
+:deep(.diet-suggestion-dialog strong) {
+  color: #303133;
+}
+
 @media (max-width: 992px) {
   .metrics-container {
     grid-template-columns: repeat(2, 1fr);
@@ -2112,5 +2358,103 @@ const syncDevice = async () => {
     flex-direction: column;
     width: 100%;
   }
+}
+
+/* 添加AI血糖风险评估容器样式 */
+.ai-alert-container {
+  background-color: #fff6f6;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 15px;
+  border: 1px solid #ffd6d6;
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.1);
+}
+
+.ai-alert-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.ai-alert-header .el-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+  color: #e74c3c;
+}
+
+.ai-alert-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #34495e;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 8px;
+  border-left: 3px solid #e74c3c;
+}
+
+/* 对话框中AI分析内容的样式 */
+:deep(.advice-dialog .ai-analysis-content) {
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+:deep(.advice-dialog .ai-analysis-content h3) {
+  color: #e74c3c;
+  margin: 16px 0 8px 0;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+:deep(.advice-dialog .ai-analysis-content h4) {
+  color: #2c3e50;
+  margin: 14px 0 8px 0;
+  font-size: 15px;
+}
+
+:deep(.advice-dialog .ai-analysis-content strong) {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+:deep(.advice-dialog .el-message-box__content) {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+:deep(.advice-dialog .el-message-box__header) {
+  background-color: #f8f9fb;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+/* 新增：血糖预警消息样式 */
+:deep(.glucose-alert-warning) {
+  background-color: #fff6f6;
+  border: 1px solid #ffd6d6;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+:deep(.glucose-alert-warning h3) {
+  color: #e74c3c;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.glucose-alert-warning p) {
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 14px;
 }
 </style> 

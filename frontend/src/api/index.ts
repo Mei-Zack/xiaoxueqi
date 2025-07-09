@@ -6,8 +6,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  // 添加超时设置
-  timeout: 10000,
+  // 添加超时设置 - 从10秒增加到20秒，大模型API调用需要更长响应时间
+  timeout: 20000,
   // 添加跨域请求凭证支持
   withCredentials: true
 })
@@ -127,6 +127,10 @@ export const glucoseApi = {
   
   getStatistics: (period: string) => {
     return apiClient.get(`/api/v1/glucose/statistics?period=${period}`)
+  },
+  
+  getRecentGlucoseRecords: (days: number = 7) => {
+    return apiClient.get(`/api/v1/glucose/recent`, { params: { days } })
   }
 }
 

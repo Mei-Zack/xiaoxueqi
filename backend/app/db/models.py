@@ -51,8 +51,8 @@ class GlucoseRecord(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     user_id = Column(String(36), ForeignKey("users.id"))
     value = Column(Float, nullable=False)  # 血糖值(mmol/L)
-    measurement_time = Column(String(50), nullable=False)  # 测量类型(空腹/餐后等)
-    measurement_method = Column(String(50), nullable=False)  # 测量方法
+    measurement_time = Column(Enum(MeasurementTimeEnum), nullable=False)  # 测量类型(空腹/餐后等)
+    measurement_method = Column(Enum(MeasurementMethodEnum), nullable=False)  # 测量方法
     measured_at = Column(DateTime, default=func.now())  # 测量时间
     notes = Column(Text, nullable=True)  # 备注
     created_at = Column(DateTime, default=func.now())
