@@ -445,6 +445,17 @@ const handleCloseSourceDialog = () => {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* 定义主题色变量 */
 :root {
   --metric-color: #2ecc71; /* 绿色 */
@@ -505,12 +516,13 @@ const handleCloseSourceDialog = () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 20px;
+  height: 100%;
+  color: #303133;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .welcome-icon {
-  margin-bottom: 16px;
-  color: var(--primary-color); /* 使用主题蓝色 */
+  margin-bottom: 20px;
 }
 
 .welcome-message h3 {

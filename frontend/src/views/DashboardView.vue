@@ -44,12 +44,32 @@
                   <p>欢迎使用糖尿病智能健康助理，今天是 {{ currentDate }}</p>
                 </div>
                 <div class="welcome-actions">
-                  <el-button type="primary" @click="goToGlucoseRecord">
-                    <el-icon><Plus /></el-icon>记录血糖
-                  </el-button>
-                  <el-button @click="goToAssistant">
-                    <el-icon><ChatLineRound /></el-icon>咨询助理
-                  </el-button>
+                  <button class="button" @click="goToGlucoseRecord">
+                    <div class="bg"></div>
+                    <div class="wrap">
+                      <div class="content">
+                        <div class="char state-1">
+                          <span data-label="录" style="--i: 0">录</span>
+                          <span data-label="记" style="--i: 1">记</span>
+                          <span data-label="血" style="--i: 2">血</span>
+                          <span data-label="糖" style="--i: 3">糖</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                  <button class="button" @click="goToAssistant">
+                    <div class="bg"></div>
+                    <div class="wrap">
+                      <div class="content">
+                        <div class="char state-1">
+                          <span data-label="询" style="--i: 0">询</span>
+                          <span data-label="咨" style="--i: 1">咨</span>
+                          <span data-label="助" style="--i: 2">助</span>
+                          <span data-label="理" style="--i: 3">理</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             </el-card>
@@ -66,8 +86,8 @@
                       <el-icon><Refresh /></el-icon>
                     </el-button>
                     <el-radio-group v-model="glucosePeriod" size="small">
-                      <el-radio-button value="week">周</el-radio-button>
-                      <el-radio-button value="month">月</el-radio-button>
+                      <el-radio-button label="week">周</el-radio-button>
+                      <el-radio-button label="month">月</el-radio-button>
                     </el-radio-group>
                   </div>
                 </div>
@@ -81,7 +101,6 @@
                 </el-empty>
               </div>
               <div v-else class="chart-container">
-                <!-- 这里将使用ECharts渲染血糖趋势图 -->
                 <div ref="glucoseChartRef" class="chart" :key="chartKey"></div>
               </div>
             </el-card>
@@ -2215,67 +2234,507 @@ const syncDevice = async () => {
 .knowledge-card .card-header span { color: var(--knowledge-color); }
 
 .welcome-card {
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .welcome-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+}
+
+.welcome-text {
+  /* The container no longer needs special styling for the effect */
 }
 
 .welcome-text h2 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 300;
+  margin: 0 0 8px 0;
+  color: transparent;
+  background: linear-gradient(90deg, #d2d2d2, #ffffff, #d2d2d2);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: text-shine 4s linear infinite;
 }
 
 .welcome-text p {
-  margin: 8px 0 0;
-  opacity: 0.9;
   font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+@keyframes text-shine {
+  to {
+    background-position: -200% center;
+  }
 }
 
 .welcome-actions {
   display: flex;
-  gap: 15px;
+  gap: 16px;
 }
 
-.welcome-actions .el-button--primary {
-  background-color: #ffffff !important;
-  color: #0072ff;
-  border: none;
-  border-radius: 20px;
+.welcome-actions .button {
+  --white: #ffe7ff;
+  --purple-100: #f4b1fd;
+  --purple-200: #d190ff;
+  --purple-300: #c389f2;
+  --purple-400: #8e26e2;
+  --purple-500: #5e2b83;
+  --radius: 12px;
+
+  border-radius: var(--radius);
+  outline: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  background: transparent;
+  letter-spacing: -1px;
+  border: 0;
+  position: relative;
+  width: 160px;
+  height: 60px;
+  transform: rotate(353deg) skewX(4deg);
+}
+
+.welcome-actions .bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: blur(1px);
+}
+.welcome-actions .bg::before,
+.welcome-actions .bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--radius) * 1.1);
+  background: var(--purple-500);
+}
+.welcome-actions .bg::before {
+  filter: blur(5px);
+  transition: all 0.3s ease;
+  box-shadow:
+    -7px 6px 0 0 rgb(115 75 155 / 40%),
+    -14px 12px 0 0 rgb(115 75 155 / 30%),
+    -21px 18px 4px 0 rgb(115 75 155 / 25%),
+    -28px 24px 8px 0 rgb(115 75 155 / 15%),
+    -35px 30px 12px 0 rgb(115 75 155 / 12%),
+    -42px 36px 16px 0 rgb(115 75 155 / 8%),
+    -56px 42px 20px 0 rgb(115 75 155 / 5%);
+}
+
+.welcome-actions .wrap {
+  border-radius: inherit;
+  overflow: hidden;
+  height: 100%;
+  transform: translate(6px, -6px);
+  padding: 3px;
+  background: linear-gradient(
+    to bottom,
+    var(--purple-100) 0%,
+    var(--purple-400) 100%
+  );
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.welcome-actions .outline {
+  position: absolute;
+  overflow: hidden;
+  inset: 0;
+  opacity: 0;
+  outline: none;
+  border-radius: inherit;
+  transition: all 0.4s ease;
+}
+.welcome-actions .outline::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  width: 120px;
+  height: 300px;
+  margin: auto;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    white 50%,
+    transparent 100%
+  );
+  animation: spin 3s linear infinite;
+  animation-play-state: paused;
+}
+
+.welcome-actions .content {
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  position: relative;
+  height: 100%;
+  gap: 16px;
+  border-radius: calc(var(--radius) * 0.85);
   font-weight: 600;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: linear-gradient(
+    to bottom,
+    var(--purple-300) 0%,
+    var(--purple-400) 100%
+  );
+  box-shadow:
+    inset -2px 12px 11px -5px var(--purple-200),
+    inset 1px -3px 11px 0px rgb(0 0 0 / 35%);
+}
+.welcome-actions .content::before {
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 10;
+  width: 80%;
+  top: 45%;
+  bottom: 35%;
+  opacity: 0.7;
+  margin: auto;
+  background: linear-gradient(to bottom, transparent, var(--purple-400));
+  filter: brightness(1.3) blur(5px);
 }
 
-.welcome-actions .el-button {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 20px;
-  font-weight: 600;
+.welcome-actions .char {
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.welcome-actions .char span {
+  display: block;
+  color: transparent;
+  position: relative;
+}
+.welcome-actions .char span:nth-child(5) {
+  margin-left: 5px;
+}
+.welcome-actions .char.state-1 span:nth-child(5) {
+  margin-right: -3px;
+}
+.welcome-actions .char.state-1 span {
+  animation: charAppear 1.2s ease backwards calc(var(--i) * 0.03s);
+}
+.welcome-actions .char.state-1 span::before,
+.welcome-actions .char span::after {
+  content: attr(data-label);
+  position: absolute;
+  color: var(--white);
+  text-shadow: -1px 1px 2px var(--purple-500);
+  left: 0;
+}
+.welcome-actions .char span::before {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+.welcome-actions .char.state-2 {
+  position: absolute;
+  left: 80px;
+}
+.welcome-actions .char.state-2 span::after {
+  opacity: 1;
 }
 
-.chart-card .card-header {
-  border-bottom: none;
+.welcome-actions .icon {
+  animation: resetArrow 0.8s cubic-bezier(0.7, -0.5, 0.3, 1.2) forwards;
+  z-index: 10;
+}
+.welcome-actions .icon div,
+.welcome-actions .icon div::before,
+.welcome-actions .icon div::after {
+  height: 3px;
+  border-radius: 1px;
+  background-color: var(--white);
+}
+.welcome-actions .icon div::before,
+.welcome-actions .icon div::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  transform-origin: center right;
+  width: 14px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+.welcome-actions .icon div {
+  position: relative;
+  width: 24px;
+  box-shadow: -2px 2px 5px var(--purple-400);
+  transform: scale(0.9);
+  background: linear-gradient(to bottom, var(--white), var(--purple-100));
+  animation: swingArrow 1s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.welcome-actions .icon div::before {
+  transform: rotate(44deg);
+  top: 1px;
+  box-shadow: 1px -2px 3px -1px var(--purple-400);
+  animation: rotateArrowLine 1s linear infinite;
+  animation-play-state: paused;
+}
+.welcome-actions .icon div::after {
+  bottom: 1px;
+  transform: rotate(316deg);
+  box-shadow: -2px 2px 3px 0 var(--purple-400);
+  background: linear-gradient(200deg, var(--white), var(--purple-100));
+  animation: rotateArrowLine2 1s linear infinite;
+  animation-play-state: paused;
+}
+
+.welcome-actions .path {
+  position: absolute;
+  z-index: 12;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  stroke-dasharray: 150 480;
+  stroke-dashoffset: 150;
+  pointer-events: none;
+}
+
+.welcome-actions .splash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  stroke-dasharray: 60 60;
+  stroke-dashoffset: 60;
+  transform: translate(-17%, -31%);
+  stroke: var(--purple-300);
+}
+
+/** STATES */
+
+.welcome-actions .button:hover .words {
+  opacity: 1;
+}
+.welcome-actions .button:hover .words span {
+  animation-play-state: running;
+}
+
+.welcome-actions .button:hover .char.state-1 span::before {
+  animation: charAppear 0.7s ease calc(var(--i) * 0.03s);
+}
+
+.welcome-actions .button:hover .char.state-1 span::after {
+  opacity: 1;
+  animation: charDisappear 0.7s ease calc(var(--i) * 0.03s);
+}
+
+.welcome-actions .button:hover .wrap {
+  transform: translate(8px, -8px);
+}
+
+.welcome-actions .button:hover .outline {
+  opacity: 1;
+}
+
+.welcome-actions .button:hover .outline::before,
+.welcome-actions .button:hover .icon div::before,
+.welcome-actions .button:hover .icon div::after,
+.welcome-actions .button:hover .icon div {
+  animation-play-state: running;
+}
+
+.welcome-actions .button:active .bg::before {
+  filter: blur(5px);
+  opacity: 0.7;
+  box-shadow:
+    -7px 6px 0 0 rgb(115 75 155 / 40%),
+    -14px 12px 0 0 rgb(115 75 155 / 25%),
+    -21px 18px 4px 0 rgb(115 75 155 / 15%);
+}
+.welcome-actions .button:active .content {
+  box-shadow:
+    inset -1px 12px 8px -5px rgba(71, 0, 137, 0.4),
+    inset 0px -3px 8px 0px var(--purple-200);
+}
+
+.welcome-actions .button:active .words,
+.welcome-actions .button:active .outline {
+  opacity: 0;
+}
+
+.welcome-actions .button:active .wrap {
+  transform: translate(3px, -3px);
+}
+
+.welcome-actions .button:active .splash {
+  animation: splash 0.8s cubic-bezier(0.3, 0, 0, 1) forwards 0.05s;
+}
+
+.welcome-actions .button:focus .path {
+  animation: path 1.6s ease forwards 0.2s;
+}
+
+.welcome-actions .button:focus .icon {
+  animation: arrow 1s cubic-bezier(0.7, -0.5, 0.3, 1.5) forwards;
+}
+
+.welcome-actions .char.state-2 span::after,
+.welcome-actions .button:focus .char.state-1 span {
+  animation: charDisappear 0.5s ease forwards calc(var(--i) * 0.03s);
+}
+
+.welcome-actions .button:focus .char.state-2 span::after {
+  animation: charAppear 1s ease backwards calc(var(--i) * 0.03s);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes charAppear {
+  0% {
+    transform: translateY(50%);
+    opacity: 0;
+    filter: blur(20px);
+  }
+  20% {
+    transform: translateY(70%);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-15%);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes charDisappear {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-70%);
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+
+@keyframes arrow {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+  51% {
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-128px);
+    opacity: 1;
+  }
+}
+
+@keyframes swingArrow {
+  50% {
+    transform: translateX(5px) scale(0.9);
+  }
+}
+
+@keyframes rotateArrowLine {
+  50% {
+    transform: rotate(30deg);
+  }
+  80% {
+    transform: rotate(55deg);
+  }
+}
+
+@keyframes rotateArrowLine2 {
+  50% {
+    transform: rotate(330deg);
+  }
+  80% {
+    transform: rotate(300deg);
+  }
+}
+
+@keyframes resetArrow {
+  0% {
+    transform: translateX(-128px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes path {
+  from {
+    stroke: white;
+  }
+  to {
+    stroke-dashoffset: -480;
+    stroke: #f9c6fe;
+  }
+}
+
+@keyframes splash {
+  to {
+    stroke-dasharray: 2 60;
+    stroke-dashoffset: -60;
+  }
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  height: 420px; /* 增加一些高度 */
+  padding: 0;
+  animation: fadeInUp 0.5s ease-in-out forwards;
+  opacity: 0;
+  animation-delay: 0.2s; /* 延迟动画 */
+}
+
+.chart-card .el-card__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.chart-card .el-card__body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 关键修复：允许flex子项收缩 */
 }
 
 .chart-container {
-  height: 350px;
+  flex: 1;
   width: 100%;
-  margin: 0;
-  border: none;
-  border-radius: 4px;
+  height: 100%;
+  min-height: 0;
 }
 
 .chart {
   width: 100%;
   height: 100%;
-  min-height: 350px;
 }
 
 .metrics-container {
@@ -3517,6 +3976,26 @@ const syncDevice = async () => {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* 为所有卡片（除了欢迎卡片）添加通用样式和悬停效果 */
+.el-card:not(.welcome-card) {
+  border-radius: 16px;
+  border: 1px solid #e5e5e5; /* 添加一个浅色边框来定义边缘 */
+  box-shadow: 0px 5px 0px 0px #e0e0e0; /* 使用无模糊的阴影创建厚度感 */
+  transition: all 0.2s ease-in-out;
+  position: relative; /* 为悬停时的位置调整做准备 */
+  top: 0;
+}
+
+.el-card:not(.welcome-card):hover {
+  top: -5px; /* 向上移动卡片，产生按下的感觉 */
+  box-shadow: 0px 10px 0px 0px #d1d1d1; /* 悬停时增加厚度感 */
+  transform: translateY(-5px) scale(1.02); /* 保留原有的上浮和放大效果 */
+}
+
+.el-row {
+  width: 100%;
 }
 
 </style> 
